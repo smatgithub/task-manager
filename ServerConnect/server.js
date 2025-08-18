@@ -1,0 +1,133 @@
+// ServerConnect/server.js
+require('dotenv').config();
+
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const mongoose = require('mongoose');
+const cookieParser = require('cookie-parser');
+const passport = require('passport');
+
+// Routes
+const authRoutes = require('./routes/auth');
+const oauthRoutes = require('./routes/oauth');
+const taskRoutes = require('./routes/tasks');
+const userRoutes = require('./routes/users');
+
+// Auth middleware (your new robust one)
+const verifyToken = require('./middleware/verifyToken');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+/* =========================
+   Security & Core Middleware
+========================= */
+
+// Security headers (relax CSP separately if you embed cross-origin)
+app.use(helmet());
+
+// CORS (dev + prod)
+const allowedOrigins = [
+  process.env.FRONTEND_URL || 'http://localhost:5173',
+  process.env.FRONTEND_URL_2, // e.g. https://connect.kiswok.com
+].filter(Boolean);
+
+app.use(cors({
+  origin(origin, cb) {
+    // allow server-to-server or Postman (no Origin header)
+    if (!origin) return cb(null, true);
+    return allowedOrigins.includes(origin)
+      ? cb(null, true)
+      : cb(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  credentials: true,
+  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization'],
+}));
+
+// Body & cookies
+app.use(express.json());
+app.use(cookieParser());
+
+// Passport
+require('./config/googleAuth')(passport);
+require('./config/microsoftAuth')(passport);
+app.use(passport.initialize());
+
+/* =========================
+   Database
+========================= */
+
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('✅ Connected to MongoDB'))
+  .catch(err => {
+    console.error('❌ MongoDB connection error:', err.message);
+    process.exit(1);
+  });
+
+/* =========================
+   Rate Limits
+========================= */
+
+const authLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api/auth', authLimiter);
+
+/* =========================
+   Routes
+========================= */
+
+// Health
+app.get('/', (_req, res) => res.send('🚀 Task Manager API is running...'));
+
+// Auth (local + OAuth)
+app.use('/api/auth', authRoutes);
+app.use('/api/auth', oauthRoutes);
+
+// Debug: who am I (quick sanity check for token + verifyToken)
+app.get('/api/debug/whoami', verifyToken, (req, res) => {
+  res.json({ ok: true, user: req.user });
+});
+
+// Protected resources
+// If every route in these routers requires auth, protect at the router level:
+app.use('/api/tasks', verifyToken, taskRoutes);
+app.use('/api/users', verifyToken, userRoutes);
+
+// 404
+app.use((req, res) => res.status(404).json({ message: 'Not found', path: req.originalUrl }));
+
+// Central error handler
+// eslint-disable-next-line no-unused-vars
+app.use((err, _req, res, _next) => {
+  console.error('Unhandled error:', err);
+  // If CORS function above rejects, err.message will have the origin
+  const status = err.message?.startsWith('CORS blocked') ? 403 : 500;
+  res.status(status).json({ message: err.message || 'Server error' });
+});
+
+/* =========================
+   Start & Graceful Shutdown
+========================= */
+
+const server = app.listen(PORT, () => {
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
+});
+
+function shutdown(signal) {
+  console.log(`\n${signal} received, closing server...`);
+  server.close(() => {
+    mongoose.connection.close(false).then(() => {
+      console.log('🛑 Closed HTTP server & Mongo connection');
+      process.exit(0);
+    });
+  });
+}
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));

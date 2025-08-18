@@ -1,0 +1,17 @@
+{
+  "name": "task-manager-monorepo",
+  "private": true,
+  
+    "scripts": {
+      "dev:server": "cross-env NODE_ENV=development npm --prefix ServerConnect run dev",
+      "dev:client": "cross-env NODE_ENV=development npm --prefix ClientConnect run dev",
+      "dev": "concurrently -k -n server,client -c auto \"npm:dev:server\" \"npm:dev:client\"",
+      "dev:seq": "start-server-and-test \"npm run dev:server\" http-get://localhost:3000 \"npm run dev:client\""
+    }
+  ,
+  "devDependencies": {
+    "concurrently": "^9.0.0",
+    "cross-env": "^7.0.3",
+    "start-server-and-test": "^2.0.1"
+  }
+}

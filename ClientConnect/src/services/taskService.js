@@ -1,0 +1,50 @@
+// src/services/taskService.js
+import axios from 'axios';
+
+// Use env if present, fall back to localhost
+const API_BASE =
+  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_API_BASE ||
+  'http://localhost:3000';
+
+const API_URL = `${API_BASE}/api/tasks`;
+
+// Optional: one axios client with sane defaults
+const client = axios.create({
+  baseURL: API_URL,
+  timeout: 10000,
+  withCredentials: true, // include cookies if your backend sets them
+});
+
+// Helper to attach token when provided
+const authHeader = (token) =>
+  token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+
+// ---------- EXISTING FUNCTIONS (kept same behavior) ----------
+export const addTaskToMaster = async (taskData, token) => {
+  const res = await client.post(`/master`, taskData, authHeader(token));
+  return res.data;
+};
+
+export const getTasksForUser = async (userName, taskType, token) => {
+  const params = new URLSearchParams();
+  if (userName) params.append('assignedTo', userName);
+  if (taskType) params.append('taskType', taskType);
+
+  const res = await client.get(`/master?${params.toString()}`, authHeader(token));
+  return res.data;
+};
+
+// ---------- NEW: board endpoint ----------
+/**
+ * Fetch tasks assigned to an employee id (paginated)
+ * Returns: { page, limit, total, items: [...] }
+ */
+export const getAssignedTasks = async ({ empId, page = 1, limit = 10, token }) => {
+  if (!empId) throw new Error('empId is required');
+  const res = await client.get(
+    `/assigned-to/${empId}?page=${page}&limit=${limit}`,
+    authHeader(token)
+  );
+  return res.data;
+};
