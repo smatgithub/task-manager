@@ -1,6 +1,6 @@
 // src/hooks/useTasks.js
 import { useCallback, useEffect, useState } from 'react';
-import { getAssignedTasks } from '../services/taskService.js';  // <-- fix path & name
+import { getAssignedTasks, updateTaskStatus } from '../services/taskService.js';  // <-- fix path & name
 import { isCompleted } from '../utils/status.js';
 
 export function useTasks(empId, initialLimit = 10) {
@@ -37,9 +37,31 @@ export function useTasks(empId, initialLimit = 10) {
   };
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
+  const updateStatus = useCallback(async (taskId, nextStatus) => {
+    let prevStatusValue = undefined;
+    // optimistic update while remembering previous value
+    setItems(prev => prev.map(t => {
+      if (t._id === taskId) {
+        prevStatusValue = t.status;
+        return { ...t, status: nextStatus };
+      }
+      return t;
+    }));
 
+    try {
+      await updateTaskStatus({
+        taskId,
+        status: nextStatus,
+        token: (typeof window !== 'undefined' && localStorage.getItem('token')) || ''
+      });
+    } catch (e) {
+      // rollback on failure
+      setItems(prev => prev.map(t => t._id === taskId ? { ...t, status: prevStatusValue } : t));
+      throw e;
+    }
+  }, []);
   return {
     items, grouped, page, limit, total, totalPages, loading, error,
-    setPage, setLimit, reload: load,
+    setPage, setLimit, reload: load, updateStatus
   };
 }

@@ -48,3 +48,50 @@ export const getAssignedTasks = async ({ empId, page = 1, limit = 10, token }) =
   );
   return res.data;
 };
+
+export const updateTaskStatus = async ({ taskId, status, token }) => {
+  if (!taskId) throw new Error('taskId is required');
+
+  // Map UI keys to backend-friendly values if needed
+  // (Adjust this mapping to match your API's canonical enum)
+  const SEND_STATUS_MAP = {
+    open: 'open',
+    working: 'in_progress',
+    stuck: 'stuck',
+    completed: 'completed',
+  };
+  const payload = { status: SEND_STATUS_MAP[status] || status };
+  const cfg = authHeader(token);
+
+  // Try a few common REST shapes so we don't hard fail on a 404
+  const candidates = [
+    // PATCH task only
+    `/${taskId}`,
+    // PATCH status sub-resource
+    `/${taskId}/status`,
+    // PUT variants (some APIs use PUT instead of PATCH)
+    { method: 'put', path: `/${taskId}` },
+    { method: 'put', path: `/${taskId}/status` },
+  ];
+
+  let lastErr;
+  for (const c of candidates) {
+    try {
+      if (typeof c === 'string') {
+        const res = await client.patch(c, payload, cfg);
+        return res.data;
+      } else if (c.method === 'put') {
+        const res = await client.put(c.path, payload, cfg);
+        return res.data;
+      }
+    } catch (e) {
+      // If 404, try the next candidate. If 401/403/5xx, bubble up immediately.
+      const statusCode = e?.response?.status;
+      if (statusCode && statusCode !== 404) {
+        throw e;
+      }
+      lastErr = e;
+    }
+  }
+  throw lastErr || new Error('Failed to update task status: no matching endpoint');
+};

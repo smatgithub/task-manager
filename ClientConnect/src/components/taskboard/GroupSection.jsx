@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import TaskTable from './TaskTable';
 
-export default function GroupSection({ title, tasks, accent = 'bg-green-500' }) {
+export default function GroupSection({ title, tasks, accent = 'bg-green-500', onChangeStatus }) {
   const [open, setOpen] = useState(true);
   return (
     <div className="mb-8">
@@ -11,7 +11,7 @@ export default function GroupSection({ title, tasks, accent = 'bg-green-500' }) 
         <span className="ml-2 text-xs text-gray-500">{tasks.length}</span>
         <span className="ml-3 text-xs text-gray-400 group-hover:text-gray-700">{open ? '▾' : '▸'}</span>
       </button>
-      {open && <TaskTable tasks={tasks} />}
+      {open && <TaskTable tasks={tasks} onChangeStatus={onChangeStatus} />}
     </div>
   );
 }

@@ -3,12 +3,11 @@ import { useTasks } from '../../hooks/useTasks';
 import GroupSection from './GroupSection';
 import PageSizeSelect from './pagination/PageSizeSelect';
 import PaginationControls from './pagination/PaginationControls';
+import BoardToolbar from './toolbar/BoardToolbar';
 
 export default function TaskBoard({ empId }) {
-  const {
-    grouped, page, limit, totalPages, loading, error,
-    setPage, setLimit, reload
-  } = useTasks(empId, 10);
+  const { grouped, page, limit, totalPages, loading, error, setLimit, reload, updateStatus } = useTasks(empId, 10);
+
 
   const canPrev = page > 1;
   const canNext = page < totalPages;
@@ -16,9 +15,12 @@ export default function TaskBoard({ empId }) {
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
       <div className="max-w-6xl mx-auto space-y-8">
+
+        {/* Header + Toolbar */}
         <div className="flex items-center justify-between">
           <h2 className="text-3xl font-bold text-gray-800">My Task Board</h2>
-          <div className="flex items-center text-sm">
+          <div className="flex items-center gap-3">
+            <BoardToolbar onSearch={(q) => reload(1, limit, { q })} />
             <PageSizeSelect value={limit} onChange={(n) => { setLimit(n); reload(1, n); }} />
             <PaginationControls
               page={page}
@@ -31,11 +33,21 @@ export default function TaskBoard({ empId }) {
           </div>
         </div>
 
-        {error && <div className="p-4 rounded-md bg-red-50 border border-red-200 text-red-700 text-sm">{error}</div>}
-        {loading && <div className="p-4 rounded-md bg-gray-50 border border-gray-200 text-gray-600 text-sm">Loading tasks...</div>}
+        {error && (
+          <div className="p-4 rounded-md bg-red-50 border border-red-200 text-red-700 text-sm">
+            {error}
+          </div>
+        )}
 
-        <GroupSection title="To-Do" tasks={grouped['To-Do']} accent="bg-green-500" />
-        <GroupSection title="Completed" tasks={grouped['Completed']} accent="bg-emerald-600" />
+        {loading && (
+          <div className="p-4 rounded-md bg-gray-50 border border-gray-200 text-gray-600 text-sm">
+            Loading tasks...
+          </div>
+        )}
+
+        {/* Groups */}
+        <GroupSection title="To-Do" tasks={grouped['To-Do']} accent="bg-green-500" onChangeStatus={updateStatus} />
+        <GroupSection title="Completed" tasks={grouped['Completed']} accent="bg-emerald-600" onChangeStatus={updateStatus} />
       </div>
     </div>
   );
