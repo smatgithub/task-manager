@@ -52,26 +52,22 @@ export const getAssignedTasks = async ({ empId, page = 1, limit = 10, token }) =
 export const updateTaskStatus = async ({ taskId, status, token }) => {
   if (!taskId) throw new Error('taskId is required');
 
-  // Map UI keys to backend-friendly values if needed
-  // (Adjust this mapping to match your API's canonical enum)
+  // Let the server normalize; avoid underscores
   const SEND_STATUS_MAP = {
     open: 'open',
-    working: 'in_progress',
+    working: 'working',      // server -> "in-progress"
     stuck: 'stuck',
-    completed: 'completed',
+    completed: 'completed',  // server -> "done"
   };
   const payload = { status: SEND_STATUS_MAP[status] || status };
   const cfg = authHeader(token);
 
-  // Try a few common REST shapes so we don't hard fail on a 404
+  // Try canonical path first to avoid 404 noise
   const candidates = [
-    // PATCH task only
-    `/${taskId}`,
-    // PATCH status sub-resource
-    `/${taskId}/status`,
-    // PUT variants (some APIs use PUT instead of PATCH)
-    { method: 'put', path: `/${taskId}` },
+    `/${taskId}/status`,                  // primary route
+    `/${taskId}`,                         // fallback alias (if added server-side)
     { method: 'put', path: `/${taskId}/status` },
+    { method: 'put', path: `/${taskId}` },
   ];
 
   let lastErr;
@@ -85,11 +81,8 @@ export const updateTaskStatus = async ({ taskId, status, token }) => {
         return res.data;
       }
     } catch (e) {
-      // If 404, try the next candidate. If 401/403/5xx, bubble up immediately.
-      const statusCode = e?.response?.status;
-      if (statusCode && statusCode !== 404) {
-        throw e;
-      }
+      const code = e?.response?.status;
+      if (code && code !== 404) throw e; // only swallow 404 to try next
       lastErr = e;
     }
   }
