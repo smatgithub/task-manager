@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { FaGoogle, FaMicrosoft } from 'react-icons/fa';
+const apiBase =
+  import.meta.env.VITE_API_BASE_URL || ""; // empty = same origin
 
 const Home = () => {
   const [user, setUser] = useState(null);
@@ -12,11 +14,11 @@ const Home = () => {
   }, []);
 
   const handleMicrosoftLogin = () => {
-    window.location.href = 'http://localhost:3000/api/auth/microsoft';
+    window.location.href = `${apiBase}/api/auth/microsoft`;
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:3000/api/auth/google';
+    window.location.href = `${apiBase}/api/auth/google`;
   };
 
   return (

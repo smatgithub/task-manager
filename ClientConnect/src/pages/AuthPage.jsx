@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+const apiBase =
+  import.meta.env.VITE_API_BASE_URL || ""; // empty = same origin
 
 const AuthPage = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -19,11 +21,11 @@ const AuthPage = () => {
   }, [navigate]);
 
   const handleMicrosoftLogin = () => {
-    window.location.href = 'http://localhost:3000/api/auth/microsoft';
+    window.location.href = `${apiBase}/api/auth/microsoft`;
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:3000/api/auth/google';
+    window.location.href = `${apiBase}/api/auth/google`;
   };
 
   return (

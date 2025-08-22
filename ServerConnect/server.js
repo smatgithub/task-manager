@@ -7,6 +7,8 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
+const path = require('path');
+const compression = require('compression');
 const passport = require('passport');
 
 // Routes
@@ -50,6 +52,8 @@ app.use(cors({
 // Body & cookies
 app.use(express.json());
 app.use(cookieParser());
+// Gzip/Brotli compression for faster static & API responses
+app.use(compression());
 
 // Passport
 require('./config/googleAuth')(passport);
@@ -83,8 +87,10 @@ app.use('/api/auth', authLimiter);
    Routes
 ========================= */
 
-// Health
-app.get('/', (_req, res) => res.send('🚀 Task Manager API is running...'));
+
++ // Health
+// - app.get('/', (_req, res) => res.send('🚀 Task Manager API is running...'));
++ app.get('/healthz', (_req, res) => res.send('ok'));
 
 // Auth (local + OAuth)
 app.use('/api/auth', authRoutes);
@@ -100,8 +106,33 @@ app.get('/api/debug/whoami', verifyToken, (req, res) => {
 app.use('/api/tasks', verifyToken, taskRoutes);
 app.use('/api/users', verifyToken, userRoutes);
 
+/* =========================
+   SPA Static (serve built React)
+========================= */
+// The Docker image copies ClientConnect/dist to /app/client.
+// For local runs without Docker, you can set SPA_DIR via env or keep the default '../ClientConnect/dist'.
+const clientDir = process.env.SPA_DIR
+  ? path.resolve(process.env.SPA_DIR)
+  : (process.env.NODE_ENV === 'production'
+      ? path.join(__dirname, 'client')
+      : path.resolve(__dirname, '../ClientConnect/dist'));
+
+// Long-cache only versioned assets
+app.use('/assets', express.static(path.join(clientDir, 'assets'), {
+  setHeaders: (res) => res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+}));
+
+// Default static files (index.html will be handled by fallback below)
+app.use(express.static(clientDir));
+
+// SPA fallback for any non-API route (so deep links work)
+app.get(/^(?!\/api\/).*/, (_req, res) => {
+  res.sendFile(path.join(clientDir, 'index.html'));
+});
+
 // 404
-app.use((req, res) => res.status(404).json({ message: 'Not found', path: req.originalUrl }));
+// app.use('/api/*', (req, res) => res.status(404).json({ message: 'Not found', path: req.originalUrl }));
+app.use(/^\/api\/.*/, (req, res) => res.status(404).json({ message: 'Not found', path: req.originalUrl }));
 
 // Central error handler
 // eslint-disable-next-line no-unused-vars

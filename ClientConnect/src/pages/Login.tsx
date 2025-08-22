@@ -1,14 +1,16 @@
-import React from 'react';
+// import { useState, useMemo, useEffect } from "react";
 import { FaMicrosoft } from 'react-icons/fa';
 import { FcGoogle } from 'react-icons/fc';
+const apiBase =
+  import.meta.env.VITE_API_BASE_URL || ""; // empty = same origin
 
 const Login = () => {
   const handleMicrosoftLogin = () => {
-    window.location.href = 'http://localhost:3000/api/auth/microsoft';
+    window.location.href = `${apiBase}/api/auth/microsoft`;
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:3000/api/auth/google';
+    window.location.href = `${apiBase}/api/auth/google`;
   };
 
   return (

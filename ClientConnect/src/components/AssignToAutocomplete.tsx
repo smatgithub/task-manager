@@ -1,33 +1,58 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+
+type Option = {
+  id: string | number;
+  name?: string;
+  email?: string;
+  empId?: string | number | null;
+  label: string;
+};
+
+interface AssignToAutocompleteProps {
+  value?: Option | null;
+  onChange?: (opt: Option | null) => void;
+  disabled?: boolean;
+  label?: string;
+  placeholder?: string;
+  inputClassName?: string;
+  containerClassName?: string;
+  /** start searching after N chars */
+  minChars?: number;
+  /** show list on focus (using empty query) */
+  showOnFocus?: boolean;
+}
 
 export default function AssignToAutocomplete({
   value,
   onChange,
-  disabled,
+  disabled = false,
   label,
   placeholder = "Type name, email, or EmpID",
   inputClassName = "w-full rounded-xl border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400",
   containerClassName = "w-full",
-  minChars = 1,           // start searching after N chars
-  showOnFocus = true,     // show list on focus (using empty query)
-}) {
+  minChars = 1,
+  showOnFocus = true,
+}: AssignToAutocompleteProps) {
   const [open, setOpen] = useState(false);
-  const [options, setOptions] = useState([]);
+  const [options, setOptions] = useState<Option[]>([]);
   const [loading, setLoading] = useState(false);
-  const [input, setInput] = useState(value?.label || value?.name || "");
-  const [activeIndex, setActiveIndex] = useState(-1);
-  const [err, setErr] = useState("");
-  const rootRef = useRef(null);
+  const [input, setInput] = useState<string>(value?.label || value?.name || "");
+  const [activeIndex, setActiveIndex] = useState<number>(-1);
+  const [err, setErr] = useState<string>("");
+  const rootRef = useRef<HTMLDivElement | null>(null);
 
-  const API_BASE = import.meta.env?.VITE_API_BASE_URL?.replace(/\/$/, "") || "";
-  const getToken = () =>
+  const API_BASE =
+    (import.meta as any)?.env?.VITE_API_BASE_URL?.replace(/\/$/, "") || "";
+
+  const getToken = (): string =>
     localStorage.getItem("token") ||
     localStorage.getItem("access_token") ||
     "";
 
-  const fetchUsers = async (q) => {
+  const fetchUsers = async (q: string): Promise<void> => {
     setErr("");
-    // If you want “all users” on empty q, keep; otherwise respect minChars
+
+    // respect minChars unless showOnFocus is true
     if (!q && !showOnFocus) return;
     if ((q || "").length < minChars && q !== "") return;
 
@@ -37,13 +62,17 @@ export default function AssignToAutocomplete({
       setOptions([]);
       return;
     }
+
     setLoading(true);
     try {
-      const url = `${API_BASE}/api/users/suggest?q=${encodeURIComponent(q || "")}&limit=10`;
+      const url = `${API_BASE}/api/users/suggest?q=${encodeURIComponent(
+        q || ""
+      )}&limit=10`;
       const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
       });
+
       if (res.status === 401 || res.status === 403) {
         setErr(`Unauthorized (${res.status}).`);
         setOptions([]);
@@ -54,19 +83,40 @@ export default function AssignToAutocomplete({
         setOptions([]);
         return;
       }
-      const json = await res.json();
+
+      const json = (await res.json()) as {
+        data?: Array<{
+          _id?: string;
+          id?: string | number;
+          name?: string;
+          email?: string;
+          empId?: string | number | null;
+          label?: string;
+        }>;
+      };
+
       const data = Array.isArray(json?.data) ? json.data : [];
-      const normalized = data
-        .map((u) => ({
-          id: u.id || u._id,
-          name: u.name,
-          email: u.email,
-          empId: u.empId ?? null,
-          label: u.label || (u.empId ? `${u.name} (${u.empId})` : u.name || u.email || ""),
-        }))
-        .filter((o) => o.id && o.label);
+
+      const normalized: Option[] = data
+        .map((u) => {
+          const id = u.id ?? u._id;
+          const label =
+            u.label ??
+            (u.empId ? `${u.name ?? ""} (${u.empId})` : u.name ?? u.email ?? "");
+      
+          if (!id || !label) return null;
+      
+          return {
+            id,
+            name: u.name,
+            email: u.email,
+            empId: u.empId ?? null,
+            label,
+          } as Option;
+        })
+        .filter((o): o is Option => o !== null);
       setOptions(normalized);
-    } catch (e) {
+    } catch {
       setErr("Network error");
       setOptions([]);
     } finally {
@@ -74,20 +124,26 @@ export default function AssignToAutocomplete({
     }
   };
 
-  // debounce helper
-  const debounce = (fn, ms = 300) => {
-    let t;
-    return (...args) => {
-      clearTimeout(t);
+  // generic debounce helper
+  function debounce<T extends (...args: any[]) => void>(fn: T, ms = 300) {
+    let t: ReturnType<typeof setTimeout> | undefined;
+    return (...args: Parameters<T>) => {
+      if (t) clearTimeout(t);
       t = setTimeout(() => fn(...args), ms);
     };
-  };
-  const debouncedFetch = useMemo(() => debounce(fetchUsers, 350), []);
+  }
+
+  const debouncedFetch = useMemo(
+    () => debounce((q: string) => void fetchUsers(q), 350),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
 
   // outside click closes menu
   useEffect(() => {
-    const onDocClick = (e) => {
-      if (!rootRef.current?.contains(e.target)) setOpen(false);
+    const onDocClick = (e: MouseEvent) => {
+      const node = e.target as Node;
+      if (rootRef.current && !rootRef.current.contains(node)) setOpen(false);
     };
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
@@ -98,8 +154,8 @@ export default function AssignToAutocomplete({
     if (value) setInput(value.label || value.name || "");
   }, [value]);
 
-  const selectOption = (opt) => {
-    onChange?.(opt || null);
+  const selectOption = (opt: Option | null) => {
+    onChange?.(opt);
     setInput(opt?.label || "");
     setOpen(false);
   };
@@ -111,7 +167,7 @@ export default function AssignToAutocomplete({
     setActiveIndex(-1);
   };
 
-  const onKeyDown = (e) => {
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!open && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
       setOpen(true);
       return;
@@ -134,7 +190,11 @@ export default function AssignToAutocomplete({
 
   return (
     <div className={containerClassName} ref={rootRef}>
-      {label && <label className="block text-sm font-medium text-slate-700 mb-1.5">{label}</label>}
+      {label && (
+        <label className="block text-sm font-medium text-slate-700 mb-1.5">
+          {label}
+        </label>
+      )}
 
       <div className="relative">
         <input
@@ -195,17 +255,23 @@ export default function AssignToAutocomplete({
             ) : (
               options.map((opt, idx) => (
                 <li
-                  key={opt.id}
+                  key={`${opt.id}`}
                   role="option"
                   aria-selected={idx === activeIndex}
-                  className={`px-3 py-2 cursor-pointer hover:bg-pink-50 ${idx === activeIndex ? "bg-pink-100" : ""}`}
+                  className={`px-3 py-2 cursor-pointer hover:bg-pink-50 ${
+                    idx === activeIndex ? "bg-pink-100" : ""
+                  }`}
                   onMouseEnter={() => setActiveIndex(idx)}
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => selectOption(opt)}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-gray-900">{opt.label}</span>
-                    <span className="text-xs text-gray-500">{opt.email}</span>
+                    <span className="font-medium text-gray-900">
+                      {opt.label}
+                    </span>
+                    {opt.email && (
+                      <span className="text-xs text-gray-500">{opt.email}</span>
+                    )}
                   </div>
                 </li>
               ))
@@ -217,8 +283,14 @@ export default function AssignToAutocomplete({
       {value && (
         <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-pink-200 bg-pink-50 px-3 py-1 text-sm">
           <span>{value.label}</span>
-          {!!value.empId && <span className="text-gray-500">• EmpID {value.empId}</span>}
-          <button className="ml-1 text-pink-600 hover:underline" onClick={clearSelection} type="button">
+          {!!value.empId && (
+            <span className="text-gray-500">• EmpID {value.empId}</span>
+          )}
+          <button
+            className="ml-1 text-pink-600 hover:underline"
+            onClick={clearSelection}
+            type="button"
+          >
             clear
           </button>
         </div>

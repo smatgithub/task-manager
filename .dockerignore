@@ -1,0 +1,15 @@
+# root
+.git
+node_modules
+npm-debug.log
+Dockerfile
+docker-compose*.yml
+
+# client
+ClientConnect/node_modules
+ClientConnect/.env*
+ClientConnect/dist
+
+# server
+ServerConnect/node_modules
+ServerConnect/.env*

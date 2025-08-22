@@ -3,9 +3,7 @@ import axios from 'axios';
 
 // Use env if present, fall back to localhost
 const API_BASE =
-  import.meta.env.VITE_API_BASE_URL ||
-  import.meta.env.VITE_API_BASE ||
-  'http://localhost:3000';
+  import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_BASE;
 
 const API_URL = `${API_BASE}/api/tasks`;
 
