@@ -1,25 +1,4 @@
-# # macOS
-# .DS_Store
 
-# # Node
-# node_modules/
-# npm-debug.log*
-# yarn-debug.log*
-# yarn-error.log*
-# pnpm-debug.log*
-# package-lock.json
-# pnpm-lock.yaml
-# yarn.lock
-
-# # Env files
-# ClientConnect/.env*
-# ServerConnect/.env*
-
-# # Builds
-# ClientConnect/dist/
-# ClientConnect/build/
-# ServerConnect/dist/
-# ServerConnect/build/
 
 # -----------------
 # OS / Editor files
@@ -40,7 +19,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
