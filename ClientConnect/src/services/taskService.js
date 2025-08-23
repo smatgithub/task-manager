@@ -21,8 +21,8 @@ const authHeader = (token) =>
 
 // ---------- EXISTING FUNCTIONS (kept same behavior) ----------
 export const addTaskToMaster = async (taskData, token) => {
-  // const res = await client.post(`/master`, taskData, authHeader(token));
-  const res = await client.post(`/`, taskData, authHeader(token));
+  const res = await client.post(`/master`, taskData, authHeader(token));
+  // const res = await client.post(`/`, taskData, authHeader(token));
   return res.data;
 };
 
@@ -31,8 +31,8 @@ export const getTasksForUser = async (userName, taskType, token) => {
   if (userName) params.append('assignedTo', userName);
   if (taskType) params.append('taskType', taskType);
 
-  // const res = await client.get(`/master?${params.toString()}`, authHeader(token));
-  const res = await client.get(`/?${params.toString()}`, authHeader(token));
+  const res = await client.get(`/master?${params.toString()}`, authHeader(token));
+  // const res = await client.get(`/?${params.toString()}`, authHeader(token));
   return res.data;
 };
 
