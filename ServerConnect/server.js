@@ -21,6 +21,14 @@ const userRoutes = require('./routes/users');
 const verifyToken = require('./middleware/verifyToken');
 
 const app = express();
+// When running behind a proxy/load balancer (Render/Cloudflare),
+// trust the first hop so req.ip and rate-limits work correctly
+// and to avoid express-rate-limit X-Forwarded-For validation errors.
+const TRUST_PROXY = (process.env.TRUST_PROXY ?? 'true').toLowerCase() !== 'false';
+if (TRUST_PROXY) {
+  // `1` = trust first proxy hop
+  app.set('trust proxy', 1);
+}
 const PORT = process.env.PORT || 3000;
 
 /* =========================
@@ -34,6 +42,7 @@ app.use(helmet());
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'http://localhost:5173',
   process.env.FRONTEND_URL_2, // e.g. https://connect.kiswok.com
+  process.env.RENDER_EXTERNAL_URL, // Render injects this env var (e.g. https://act-gnuz.onrender.com)
 ].filter(Boolean);
 
 app.use(cors({
@@ -87,10 +96,9 @@ app.use('/api/auth', authLimiter);
    Routes
 ========================= */
 
-
-+ // Health
-// - app.get('/', (_req, res) => res.send('🚀 Task Manager API is running...'));
-+ app.get('/healthz', (_req, res) => res.send('ok'));
+// Health
+// app.get('/', (_req, res) => res.send('🚀 Task Manager API is running...'));
+app.get('/healthz', (_req, res) => res.send('ok'));
 
 // Auth (local + OAuth)
 app.use('/api/auth', authRoutes);
