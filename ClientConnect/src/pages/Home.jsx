@@ -23,14 +23,7 @@ const Home = () => {
 
   return (
     <div className="min-h-screen flex flex-col justify-between bg-gradient-to-br from-indigo-100 to-white">
-      {/* Header */}
-      <header className="flex items-center justify-between px-8 py-4 bg-white shadow">
-        <h1 className="text-2xl font-bold text-indigo-700">ClientConnect</h1>
-        <nav className="space-x-4">
-          <a href="#features" className="text-indigo-600 hover:underline">Features</a>
-          <a href="#contact" className="text-indigo-600 hover:underline">Contact</a>
-        </nav>
-      </header>
+
 
       {/* Hero Section */}
       <main className="flex-grow flex flex-col items-center justify-center text-center px-4">

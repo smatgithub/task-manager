@@ -43,6 +43,8 @@ export const getTasksForUser = async (userName, taskType, token) => {
  */
 export const getAssignedTasks = async ({ empId, page = 1, limit = 10, token }) => {
   if (!empId) throw new Error('empId is required');
+  console.log(empId);
+  
   const res = await client.get(
     `/assigned-to/${empId}?page=${page}&limit=${limit}`,
     authHeader(token)
