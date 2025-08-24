@@ -17,7 +17,7 @@ function App() {
 }
 
 function AppContent() {
-  const location = useLocation();
+  // const location = useLocation();
 
   return (
     <>
