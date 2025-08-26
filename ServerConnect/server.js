@@ -10,6 +10,7 @@ const cookieParser = require('cookie-parser');
 const path = require('path');
 const compression = require('compression');
 const passport = require('passport');
+const fs = require('fs');
 
 // Routes
 const authRoutes = require('./routes/auth');
@@ -40,9 +41,10 @@ app.use(helmet());
 
 // CORS (dev + prod)
 const allowedOrigins = [
-  process.env.FRONTEND_URL || 'http://localhost:5173',
-  process.env.FRONTEND_URL_2, // e.g. https://connect.kiswok.com
-  process.env.RENDER_EXTERNAL_URL, // Render injects this env var (e.g. https://act-gnuz.onrender.com)
+  process.env.FRONTEND_URL || 'http://localhost:5173',   // vite dev default
+  process.env.FRONTEND_URL_2,                            // optional extra
+  process.env.RENDER_EXTERNAL_URL,                       // Render inject
+  (process.env.NODE_ENV !== 'production' ? 'http://localhost:8080' : null) // single-container dev
 ].filter(Boolean);
 
 app.use(cors({
@@ -100,6 +102,15 @@ app.use('/api/auth', authLimiter);
 // app.get('/', (_req, res) => res.send('🚀 Task Manager API is running...'));
 app.get('/healthz', (_req, res) => res.send('ok'));
 
+app.get('/__build', (req, res) => {
+  res.json({
+    version: process.env.BUILD_ID || 'dev',
+    time: process.env.BUILD_TIME || new Date().toISOString(),
+    node: process.version,
+    env: process.env.NODE_ENV || 'development'
+  });
+});
+
 // Auth (local + OAuth)
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', oauthRoutes);
@@ -125,18 +136,22 @@ const clientDir = process.env.SPA_DIR
       ? path.join(__dirname, 'client')
       : path.resolve(__dirname, '../ClientConnect/dist'));
 
-// Long-cache only versioned assets
-app.use('/assets', express.static(path.join(clientDir, 'assets'), {
-  setHeaders: (res) => res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
-}));
+if (fs.existsSync(clientDir)) {
+  // Long-cache only versioned assets
+  app.use('/assets', express.static(path.join(clientDir, 'assets'), {
+    setHeaders: (res) => res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+  }));
 
-// Default static files (index.html will be handled by fallback below)
-app.use(express.static(clientDir));
+  // Default static files (index.html will be handled by fallback below)
+  app.use(express.static(clientDir));
 
-// SPA fallback for any non-API route (so deep links work)
-app.get(/^(?!\/api\/).*/, (_req, res) => {
-  res.sendFile(path.join(clientDir, 'index.html'));
-});
+  // SPA fallback for any non-API route (so deep links work)
+  app.get(/^(?!\/api\/).*/, (_req, res) => {
+    res.sendFile(path.join(clientDir, 'index.html'));
+  });
+} else {
+  console.warn(`[spa] clientDir not found: ${clientDir}. Skipping static mounts (dev mode).`);
+}
 
 // 404
 // app.use('/api/*', (req, res) => res.status(404).json({ message: 'Not found', path: req.originalUrl }));
