@@ -11,13 +11,14 @@ const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 function buildSuccessRedirect(user) {
   const payload = {
     id: user._id,
+    email: user.email,
+    name: user.name,
     role: user.role,
     empId: user.empId || null,
-    email: user.email,
-    name: user.name
+    accessLevel: user.empId ? 'full' : 'restricted',
   };
 
-  const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '30m' });
+  const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
 
   const params = new URLSearchParams({
     token, // front-end will read from query string
