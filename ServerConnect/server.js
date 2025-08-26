@@ -19,7 +19,7 @@ const taskRoutes = require('./routes/tasks');
 const userRoutes = require('./routes/users');
 
 // Auth middleware (your new robust one)
-const verifyToken = require('./middleware/verifyToken');
+const { verifyToken } = require('./middleware/authMiddleware');
 
 const app = express();
 // When running behind a proxy/load balancer (Render/Cloudflare),
