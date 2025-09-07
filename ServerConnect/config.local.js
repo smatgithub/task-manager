@@ -5,19 +5,19 @@ module.exports = {
   PORT: 3000,
   
   // MongoDB - Local Docker Container
-  MONGO_URI: 'mongodb://root:devpass@localhost:27017/taskmgr?authSource=admin',
+  MONGO_URI: 'mongodb://localhost:27017/task-manager',
   
   // JWT Configuration
   JWT_SECRET: 'your-local-jwt-secret-key-change-this-in-production',
   
   // Frontend URL
-  FRONTEND_URL: 'http://localhost:5173',
+  FRONTEND_URL: 'http://localhost:5175',
   
   // Trust Proxy (for development)
   TRUST_PROXY: false,
   
   // CORS Configuration
-  CORS_ORIGIN: 'http://localhost:5173',
+  CORS_ORIGIN: 'http://localhost:5175',
   
   // OAuth Configuration (replace with your actual values)
   GOOGLE_CLIENT_ID: 'your-google-client-id',

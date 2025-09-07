@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FaGoogle, FaMicrosoft } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 const apiBase =
   import.meta.env.VITE_API_BASE_URL || ""; // empty = same origin
 
@@ -36,7 +37,7 @@ const Home = () => {
           <>
             <h2 className="text-4xl font-bold text-indigo-800 mb-4">Connect. Collaborate. Deliver.</h2>
             <p className="text-gray-600 mb-8 max-w-xl">One platform to manage tasks, streamline communication, and keep everything on track.</p>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 mb-8">
               <button
                 onClick={handleMicrosoftLogin}
                 className="flex items-center justify-center gap-3 px-6 py-3 border border-blue-600 text-blue-700 font-semibold rounded-lg hover:bg-blue-100 transition"
@@ -49,6 +50,15 @@ const Home = () => {
               >
                 <FaGoogle /> Login with Google
               </button>
+            </div>
+            <div className="text-center">
+              <p className="text-gray-600 mb-4">Don't have an account yet?</p>
+              <Link
+                to="/register"
+                className="inline-flex items-center px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition"
+              >
+                Create Account
+              </Link>
             </div>
           </>
         )}

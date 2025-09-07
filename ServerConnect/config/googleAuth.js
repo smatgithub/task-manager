@@ -19,11 +19,18 @@ module.exports = (passport) => {
 
           let user = await User.findOne({ email });
           if (!user) {
+            // Create new user if none exists
             user = await User.create({
               name: profile.displayName || 'Google User',
               email,
               authProvider: 'google',
+              role: 'user', // Default role for new OAuth users
             });
+          } else {
+            // Update existing user to support Google auth
+            // Preserve existing role and other data
+            // Note: We keep authProvider as 'local' to support both methods
+            console.log(`OAuth login for existing user: ${user.email} (role: ${user.role})`);
           }
 
           return done(null, user);

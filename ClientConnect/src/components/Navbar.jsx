@@ -19,6 +19,9 @@ const Navbar = () => {
           <Link to="/UserTasksBoard">UserTasksBoard</Link>
           <Link to="/tasksForm">Tasks Forms</Link>
           <Link to="/profile">User Profile</Link>
+          {user && (user.role === 'admin' || user.role === 'hod') && (
+            <Link to="/users">User Management</Link>
+          )}
         </div>
 
         <div className="flex items-center gap-4">
@@ -35,12 +38,20 @@ const Navbar = () => {
               </button>
             </>
           ) : (
-            <Link
-              to="/auth"
-              className="text-sm font-medium text-gray-700 hover:text-indigo-600"
-            >
-              Login
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                to="/auth"
+                className="text-sm font-medium text-gray-700 hover:text-indigo-600"
+              >
+                Login
+              </Link>
+              <Link
+                to="/register"
+                className="text-sm font-medium bg-indigo-600 text-white px-3 py-1 rounded-md hover:bg-indigo-700"
+              >
+                Register
+              </Link>
+            </div>
           )}
         </div>
       </nav>

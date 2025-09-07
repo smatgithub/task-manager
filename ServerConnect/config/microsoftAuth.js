@@ -27,11 +27,18 @@ module.exports = (passport) => {
 
           let user = await User.findOne({ email });
           if (!user) {
+            // Create new user if none exists
             user = await User.create({
               name,
               email,
               authProvider: 'microsoft',
+              role: 'user', // Default role for new OAuth users
             });
+          } else {
+            // Update existing user to support Microsoft auth
+            // Preserve existing role and other data
+            // Note: We keep authProvider as 'local' to support both methods
+            console.log(`OAuth login for existing user: ${user.email} (role: ${user.role})`);
           }
 
           // Important: DO NOT redirect or sign tokens here.

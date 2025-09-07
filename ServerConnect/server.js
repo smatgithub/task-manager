@@ -52,6 +52,8 @@ app.use(helmet());
 // CORS (dev + prod)
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'http://localhost:5173',   // vite dev default
+  'http://localhost:5174',                               // vite dev alternative port
+  'http://localhost:5175',                               // vite dev alternative port
   process.env.FRONTEND_URL_2,                            // optional extra
   process.env.RENDER_EXTERNAL_URL,                       // Render inject
   (process.env.NODE_ENV !== 'production' ? 'http://localhost:8080' : null) // single-container dev
@@ -61,6 +63,10 @@ app.use(cors({
   origin(origin, cb) {
     // allow server-to-server or Postman (no Origin header)
     if (!origin) return cb(null, true);
+    
+    console.log('CORS check - Origin:', origin);
+    console.log('CORS check - Allowed origins:', allowedOrigins);
+    
     return allowedOrigins.includes(origin)
       ? cb(null, true)
       : cb(new Error(`CORS blocked for origin: ${origin}`));
