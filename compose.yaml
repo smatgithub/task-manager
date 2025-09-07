@@ -1,0 +1,43 @@
+# compose.yaml
+name: taskmgr
+
+services:
+  mongo:
+    image: mongo:6
+    container_name: taskmgr-mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: devpass
+    volumes:
+      - taskmgr-mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 }).ok"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: taskmgr
+    depends_on:
+      mongo:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    # Use your existing env file, but override MONGO_URI to use the docker "mongo" host
+    env_file:
+      - ./ServerConnect/.env.docker.local
+    environment:
+      # Force the API to use the Mongo container (NOT host.docker.internal)
+      MONGO_URI: mongodb://taskmgr:taskmgrpass@mongo:27017/taskmgr?authSource=taskmgr
+      # If you want to be explicit:
+      PORT: 8080
+      TRUST_PROXY: "true"
+      FRONTEND_URL: http://localhost:8080
+
+volumes:
+  taskmgr-mongo-data:

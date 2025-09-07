@@ -1,24 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+
 const apiBase =
   import.meta.env.VITE_API_BASE_URL || ""; // empty = same origin
 
 const AuthPage = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
-
-    if (token && user) {
-      setIsLoggedIn(true);
+    if (isAuthenticated) {
       // Optional: redirect after delay
       setTimeout(() => {
         navigate('/dashboard');
       }, 2000);
     }
-  }, [navigate]);
+  }, [navigate, isAuthenticated]);
 
   const handleMicrosoftLogin = () => {
     window.location.href = `${apiBase}/api/auth/microsoft`;
@@ -33,7 +31,7 @@ const AuthPage = () => {
       <div className="bg-white p-10 rounded-2xl shadow-lg max-w-md w-full text-center space-y-6">
         <h1 className="text-3xl font-bold text-indigo-800">Welcome to E-Flow</h1>
 
-        {isLoggedIn ? (
+        {isAuthenticated ? (
           <p className="text-gray-700 text-sm">
             You are already logged in. Redirecting to your dashboard...
           </p>

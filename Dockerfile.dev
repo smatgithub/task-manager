@@ -1,0 +1,45 @@
+# Multi-stage Dockerfile for development
+# This allows for hot reloading and live code editing
+
+# Base stage with common dependencies
+FROM node:20-alpine AS base
+WORKDIR /app
+RUN apk add --no-cache git
+
+# Backend development stage
+FROM base AS backend-dev
+WORKDIR /app
+COPY ServerConnect/package*.json ./
+RUN npm ci
+# Note: Source code will be mounted as volume in compose.dev.yaml
+EXPOSE 3000
+CMD ["npm", "run", "dev"]
+
+# Frontend development stage  
+FROM base AS frontend-dev
+WORKDIR /app
+COPY ClientConnect/package*.json ./
+RUN npm ci
+# Note: Source code will be mounted as volume in compose.dev.yaml
+EXPOSE 5173
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+
+# Production stage (same as original Dockerfile)
+FROM base AS production
+# Build frontend
+WORKDIR /ui
+COPY ClientConnect/package*.json ./
+RUN npm ci
+COPY ClientConnect ./
+RUN npm run build
+
+# Build backend and serve frontend
+WORKDIR /app
+COPY ServerConnect/package*.json ./
+RUN npm ci --omit=dev
+COPY ServerConnect ./
+COPY --from=ui /ui/dist ./client
+ENV NODE_ENV=production
+ENV PORT=8080
+EXPOSE 8080
+CMD ["node", "server.js"]

@@ -1,6 +1,16 @@
 // ServerConnect/server.js
 require('dotenv').config();
 
+// Load local development configuration if in development mode
+if (process.env.NODE_ENV === 'development' && !process.env.MONGO_URI) {
+  const localConfig = require('./config.local.js');
+  Object.keys(localConfig).forEach(key => {
+    if (!process.env[key]) {
+      process.env[key] = localConfig[key];
+    }
+  });
+}
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');

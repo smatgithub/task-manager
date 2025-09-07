@@ -6,7 +6,15 @@
       "dev:server": "cross-env NODE_ENV=development npm --prefix ServerConnect run dev",
       "dev:client": "cross-env NODE_ENV=development npm --prefix ClientConnect run dev",
       "dev": "concurrently -k -n server,client -c auto \"npm:dev:server\" \"npm:dev:client\"",
-      "dev:seq": "start-server-and-test \"npm run dev:server\" http-get://localhost:3000 \"npm run dev:client\""
+      "dev:seq": "start-server-and-test \"npm run dev:server\" http-get://localhost:3000 \"npm run dev:client\"",
+      "docker:dev": "./dev-docker.sh start",
+      "docker:stop": "./dev-docker.sh stop",
+      "docker:logs": "./dev-docker.sh logs",
+      "docker:restart": "./dev-docker.sh restart",
+      "docker:clean": "./dev-docker.sh clean",
+      "local:mongo": "./start-mongo.sh",
+      "local:dev": "concurrently -k -n server,client -c auto \"npm:dev:server\" \"npm:dev:client\"",
+      "local:setup": "npm run local:mongo && echo 'MongoDB started! Now run: npm run local:dev'"
     }
   ,
   "devDependencies": {

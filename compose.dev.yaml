@@ -1,0 +1,60 @@
+# Development Docker Compose - for live code editing
+name: taskmgr-dev
+
+services:
+  mongo:
+    image: mongo:6
+    container_name: taskmgr-mongo-dev
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: devpass
+    volumes:
+      - taskmgr-mongo-data-dev:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 }).ok"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # Backend service with live reloading
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: backend-dev
+    container_name: taskmgr-backend-dev
+    depends_on:
+      mongo:
+        condition: service_healthy
+    ports:
+      - "3000:3000"  # Backend API port
+    volumes:
+      - ./ServerConnect:/app  # Mount source code for live reloading
+      - /app/node_modules     # Prevent overwriting node_modules
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      MONGO_URI: mongodb://root:devpass@mongo:27017/taskmgr?authSource=admin
+      FRONTEND_URL: http://localhost:5173
+    command: npm run dev
+
+  # Frontend service with live reloading
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: frontend-dev
+    container_name: taskmgr-frontend-dev
+    ports:
+      - "5173:5173"  # Vite dev server port
+    volumes:
+      - ./ClientConnect:/app  # Mount source code for live reloading
+      - /app/node_modules     # Prevent overwriting node_modules
+    environment:
+      VITE_API_BASE_URL: http://localhost:3000
+    command: npm run dev -- --host 0.0.0.0
+
+volumes:
+  taskmgr-mongo-data-dev:
