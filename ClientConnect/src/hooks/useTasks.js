@@ -15,21 +15,24 @@ export function useTasks(empId, initialLimit = 10) {
 
   const load = useCallback(async (p = page, l = limit) => {
     try {
+      console.log('Loading tasks - Page:', p, 'Limit:', l, 'EmpId:', empId);
       setLoading(true);
       setError('');
       const data = await getAssignedTasks({ empId, page: p, limit: l, token }); // <-- use the right fn
+      console.log('Tasks loaded:', data);
       setItems(Array.isArray(data.items) ? data.items : []);
       setTotal(Number(data.total || 0));
       setPage(Number(data.page || p));
       setLimit(Number(data.limit || l));
     } catch (e) {
+      console.error('Error loading tasks:', e);
       setError(e.message || 'Failed to load tasks');
     } finally {
       setLoading(false);
     }
-  }, [empId, page, limit, token]);
+  }, [empId, token]); // Removed page and limit from dependencies to prevent circular updates
 
-  useEffect(() => { load(1, limit); }, [load, limit]);
+  useEffect(() => { load(1, initialLimit); }, [load, initialLimit]);
 
   const grouped = {
     'To-Do': items.filter(t => !isCompleted(t.status)),

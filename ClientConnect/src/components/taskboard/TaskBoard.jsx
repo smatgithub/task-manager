@@ -11,6 +11,8 @@ export default function TaskBoard({ empId }) {
 
   const canPrev = page > 1;
   const canNext = page < totalPages;
+  
+  console.log('TaskBoard - Page:', page, 'TotalPages:', totalPages, 'CanPrev:', canPrev, 'CanNext:', canNext);
 
   return (
     <div className="min-h-screen bg-gray-50">

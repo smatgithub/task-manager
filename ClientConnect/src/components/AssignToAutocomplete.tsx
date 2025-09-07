@@ -68,16 +68,39 @@ export default function AssignToAutocomplete({
       const url = `${API_BASE}/api/users/suggest?q=${encodeURIComponent(
         q || ""
       )}&limit=10`;
+      
+      console.log('Fetching users from:', url);
+      console.log('Query:', q);
+      console.log('Token exists:', !!token);
+      
       const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        },
         credentials: "include",
       });
+      
+      console.log('Response status:', res.status);
+      console.log('Response headers:', Object.fromEntries(res.headers.entries()));
 
       if (res.status === 401 || res.status === 403) {
         setErr(`Unauthorized (${res.status}).`);
         setOptions([]);
         return;
       }
+      
+      // Handle 304 Not Modified - this means data hasn't changed, so we can use cached data
+      if (res.status === 304) {
+        console.log('API returned 304 - using cached data or showing existing options');
+        // If we have existing options, keep them; otherwise show a message
+        if (options.length === 0) {
+          setErr('No cached data available. Please try again.');
+        }
+        return;
+      }
+      
       if (!res.ok) {
         setErr(`Error ${res.status}`);
         setOptions([]);
@@ -95,7 +118,10 @@ export default function AssignToAutocomplete({
         }>;
       };
 
+      console.log('API Response:', json);
+      
       const data = Array.isArray(json?.data) ? json.data : [];
+      console.log('Parsed data:', data);
 
       const normalized: Option[] = data
         .map((u) => {
@@ -115,6 +141,8 @@ export default function AssignToAutocomplete({
           } as Option;
         })
         .filter((o): o is Option => o !== null);
+      
+      console.log('Normalized options:', normalized);
       setOptions(normalized);
     } catch {
       setErr("Network error");
