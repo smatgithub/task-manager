@@ -11,13 +11,13 @@ module.exports = {
   JWT_SECRET: 'your-local-jwt-secret-key-change-this-in-production',
   
   // Frontend URL
-  FRONTEND_URL: 'http://localhost:5175',
+  FRONTEND_URL: 'http://localhost:5173',
   
   // Trust Proxy (for development)
   TRUST_PROXY: false,
   
   // CORS Configuration
-  CORS_ORIGIN: 'http://localhost:5175',
+  CORS_ORIGIN: 'http://localhost:5173',
   
   // OAuth Configuration (replace with your actual values)
   GOOGLE_CLIENT_ID: 'your-google-client-id',

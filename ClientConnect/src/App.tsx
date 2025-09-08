@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import Navbar from './components/Navbar';
+import ChatWindow from './components/ChatWindow';
 import Home from './pages/Home'
 import AuthPage from './pages/AuthPage';
 import OAuthSuccess from './pages/OAuthSuccess';
@@ -27,6 +28,7 @@ function AppContent() {
   return (
     <>
       <Navbar />
+      <ChatWindow />
       <div className="pt-16">
         <Routes>
           <Route path='/' element={<Home />} />
