@@ -40,7 +40,19 @@ module.exports = async function verifyToken(req, res, next) {
     if (!user) return res.status(401).json({ message: 'User not found' });
 
     // For chat functionality, we don't require empId
-    if (req.path.includes('/chat/') && !user.empId) {
+    const isChatRoute = req.path.includes('/chat/') || 
+                       req.path.includes('/api/chat/') || 
+                       req.path.includes('/conversations') ||
+                       req.path.includes('/users') ||
+                       req.path.includes('/groups') ||
+                       req.path.includes('/messages') ||
+                       req.path.includes('/send') ||
+                       req.path.includes('/export') ||
+                       req.path.includes('/search');
+    
+    console.log('Path check:', { path: req.path, isChatRoute, hasEmpId: !!user.empId });
+    
+    if (isChatRoute && !user.empId) {
       console.log('Chat route - empId not required');
       req.user = { 
         userId: String(user._id), 

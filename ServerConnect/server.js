@@ -232,6 +232,9 @@ const io = new Server(server, {
   }
 });
 
+// Make Socket.IO available to routes
+app.set('io', io);
+
 // Socket.IO authentication middleware
 io.use(async (socket, next) => {
   try {

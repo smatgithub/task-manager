@@ -85,11 +85,16 @@ const ChatWindow = () => {
       newSocket.on('receive_message', (message) => {
         console.log('Received message:', message);
         setMessages(prev => {
-          // Remove any temporary messages with the same content
-          const filtered = prev.filter(msg => 
-            !(msg.isTemporary && msg.message === message.message && msg.sender._id === message.sender._id)
-          );
-          return [...filtered, message];
+          // Only add message if it's for the current conversation
+          if (selectedUser && 
+              (message.sender._id === selectedUser._id || message.receiver._id === selectedUser._id)) {
+            // Remove any temporary messages with the same content
+            const filtered = prev.filter(msg => 
+              !(msg.isTemporary && msg.message === message.message && msg.sender._id === message.sender._id)
+            );
+            return [...filtered, message];
+          }
+          return prev; // Don't add message if it's not for current conversation
         });
         // Mark as read if it's the current conversation
         if (selectedUser && message.sender._id === selectedUser._id) {
@@ -100,11 +105,16 @@ const ChatWindow = () => {
       newSocket.on('message_sent', (message) => {
         console.log('Message sent confirmation:', message);
         setMessages(prev => {
-          // Replace temporary message with real one
-          const filtered = prev.filter(msg => 
-            !(msg.isTemporary && msg.message === message.message && msg.sender._id === message.sender._id)
-          );
-          return [...filtered, message];
+          // Only update if it's for the current conversation
+          if (selectedUser && 
+              (message.sender._id === selectedUser._id || message.receiver._id === selectedUser._id)) {
+            // Replace temporary message with real one
+            const filtered = prev.filter(msg => 
+              !(msg.isTemporary && msg.message === message.message && msg.sender._id === message.sender._id)
+            );
+            return [...filtered, message];
+          }
+          return prev; // Don't update if it's not for current conversation
         });
       });
 
@@ -232,6 +242,7 @@ const ChatWindow = () => {
   // Fetch messages when a user is selected
   useEffect(() => {
     if (selectedUser && user && token) {
+      console.log('Fetching messages for user:', selectedUser.name, selectedUser._id);
       fetchMessages(selectedUser._id);
     }
   }, [selectedUser, user, token]);
@@ -299,16 +310,27 @@ const ChatWindow = () => {
 
   const fetchMessages = async (userId) => {
     try {
+      console.log('Fetching messages for userId:', userId);
       const response = await fetch(`/api/chat/messages/${userId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
+      console.log('Fetched messages:', data.length, 'messages');
+      console.log('Messages data:', data);
+      
+      // Clear previous messages and set new ones
       setMessages(data);
       markMessagesAsRead(userId);
     } catch (error) {
       console.error('Error fetching messages:', error);
+      setConnectionError('Failed to load messages');
     }
   };
 
@@ -410,6 +432,7 @@ const ChatWindow = () => {
   };
 
   const startNewChat = (user) => {
+    console.log('Starting new chat with user:', user.name, user._id);
     setSelectedUser(user);
     setMessages([]);
   };
@@ -702,9 +725,12 @@ const ChatWindow = () => {
                 conversations.map((conv) => (
                 <div
                   key={conv._id}
-                  onClick={() => setSelectedUser(conv.user)}
-                  className={`p-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
-                    selectedUser?._id === conv.user._id ? 'bg-indigo-50' : ''
+                  onClick={() => {
+                    console.log('Selecting conversation with user:', conv.user.name, conv.user._id);
+                    setSelectedUser(conv.user);
+                  }}
+                  className={`p-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
+                    selectedUser?._id === conv.user._id ? 'bg-indigo-50 border-l-4 border-indigo-500' : ''
                   }`}
                 >
                   <div className="flex items-center gap-2">
@@ -741,8 +767,11 @@ const ChatWindow = () => {
                   users.map((user) => (
                     <div
                       key={user._id}
-                      onClick={() => startNewChat(user)}
-                      className="p-2 hover:bg-gray-50 cursor-pointer rounded text-sm"
+                      onClick={() => {
+                        console.log('Starting new chat with user from list:', user.name, user._id);
+                        startNewChat(user);
+                      }}
+                      className="p-2 hover:bg-gray-50 cursor-pointer rounded text-sm transition-colors"
                     >
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 bg-indigo-500 rounded-full flex items-center justify-center text-white text-xs font-medium">
@@ -782,51 +811,73 @@ const ChatWindow = () => {
 
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-3 space-y-2">
-                  {messages.map((message) => (
-                    <div
-                      key={message._id}
-                      className={`flex ${message.sender._id === user._id ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div
-                        className={`max-w-xs px-3 py-2 rounded-lg text-sm ${
-                          message.sender._id === user._id
-                            ? 'bg-indigo-500 text-white'
-                            : 'bg-gray-200 text-gray-800'
-                        }`}
-                      >
-                        <p>{message.message}</p>
-                        <div className={`flex items-center justify-between mt-1 ${
-                          message.sender._id === user._id ? 'text-indigo-100' : 'text-gray-500'
-                        }`}>
-                          <p className="text-xs">
-                            {formatTime(message.timestamp)}
-                          </p>
-                          {message.sender._id === user._id && (
-                            <div className="flex items-center ml-2">
-                              {getMessageStatus(message) === 'sending' && (
-                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
-                              )}
-                              {getMessageStatus(message) === 'sent' && (
-                                <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                              )}
-                              {getMessageStatus(message) === 'delivered' && (
-                                <div className="flex">
-                                  <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                                  <div className="w-2 h-2 bg-gray-400 rounded-full -ml-1"></div>
-                                </div>
-                              )}
-                              {getMessageStatus(message) === 'read' && (
-                                <div className="flex">
-                                  <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                                  <div className="w-2 h-2 bg-blue-400 rounded-full -ml-1"></div>
+                  {messages.length === 0 ? (
+                    <div className="flex items-center justify-center h-full text-gray-500">
+                      <div className="text-center">
+                        <svg className="w-8 h-8 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                        <p className="text-sm">No messages yet. Start the conversation!</p>
+                      </div>
+                    </div>
+                  ) : (
+                    messages.map((message) => {
+                      const isOwnMessage = message.sender._id === user._id;
+                      console.log('Rendering message:', {
+                        id: message._id,
+                        text: message.message,
+                        sender: message.sender.name,
+                        isOwn: isOwnMessage,
+                        currentUser: user.name
+                      });
+                      
+                      return (
+                        <div
+                          key={message._id}
+                          className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
+                        >
+                          <div
+                            className={`max-w-xs px-3 py-2 rounded-lg text-sm ${
+                              isOwnMessage
+                                ? 'bg-indigo-500 text-white'
+                                : 'bg-gray-200 text-gray-800'
+                            }`}
+                          >
+                            <p>{message.message}</p>
+                            <div className={`flex items-center justify-between mt-1 ${
+                              isOwnMessage ? 'text-indigo-100' : 'text-gray-500'
+                            }`}>
+                              <p className="text-xs">
+                                {formatTime(message.timestamp)}
+                              </p>
+                              {isOwnMessage && (
+                                <div className="flex items-center ml-2">
+                                  {getMessageStatus(message) === 'sending' && (
+                                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
+                                  )}
+                                  {getMessageStatus(message) === 'sent' && (
+                                    <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                                  )}
+                                  {getMessageStatus(message) === 'delivered' && (
+                                    <div className="flex">
+                                      <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                                      <div className="w-2 h-2 bg-gray-400 rounded-full -ml-1"></div>
+                                    </div>
+                                  )}
+                                  {getMessageStatus(message) === 'read' && (
+                                    <div className="flex">
+                                      <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                                      <div className="w-2 h-2 bg-blue-400 rounded-full -ml-1"></div>
+                                    </div>
+                                  )}
                                 </div>
                               )}
                             </div>
-                          )}
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  ))}
+                      );
+                    })
+                  )}
                   
                   {/* Typing indicator */}
                   {isTyping && (

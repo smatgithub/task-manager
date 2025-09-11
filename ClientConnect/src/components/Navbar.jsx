@@ -20,44 +20,85 @@ const Navbar = () => {
           <Link to="/tasksForm">Tasks Forms</Link>
           <Link to="/profile">User Profile</Link>
           {user && (
-            <button 
-              onClick={() => {
-                const chatWindow = document.getElementById('chat-window');
-                if (chatWindow) {
-                  const isHidden = chatWindow.classList.contains('hidden');
-                  
-                  if (isHidden) {
-                    // Show and center the window
-                    chatWindow.classList.remove('hidden');
+            <>
+              <button 
+                onClick={() => {
+                  const chatWindow = document.getElementById('chat-window');
+                  if (chatWindow) {
+                    const isHidden = chatWindow.classList.contains('hidden');
                     
-                    // Center the window
-                    setTimeout(() => {
-                      const windowWidth = window.innerWidth;
-                      const windowHeight = window.innerHeight;
-                      const chatWidth = 384; // Default width
-                      const chatHeight = 600; // Default height
+                    if (isHidden) {
+                      // Show and center the window
+                      chatWindow.classList.remove('hidden');
                       
-                      const centerX = Math.max(0, (windowWidth - chatWidth) / 2);
-                      const centerY = Math.max(0, (windowHeight - chatHeight) / 2);
-                      
-                      chatWindow.style.left = `${centerX}px`;
-                      chatWindow.style.top = `${centerY}px`;
-                    }, 10);
+                      // Center the window
+                      setTimeout(() => {
+                        const windowWidth = window.innerWidth;
+                        const windowHeight = window.innerHeight;
+                        const chatWidth = 384; // Default width
+                        const chatHeight = 600; // Default height
+                        
+                        const centerX = Math.max(0, (windowWidth - chatWidth) / 2);
+                        const centerY = Math.max(0, (windowHeight - chatHeight) / 2);
+                        
+                        chatWindow.style.left = `${centerX}px`;
+                        chatWindow.style.top = `${centerY}px`;
+                      }, 10);
+                    } else {
+                      // Hide the window
+                      chatWindow.classList.add('hidden');
+                    }
                   } else {
-                    // Hide the window
-                    chatWindow.classList.add('hidden');
+                    console.error('Chat window not found. Please refresh the page.');
                   }
-                } else {
-                  console.error('Chat window not found. Please refresh the page.');
-                }
-              }}
-              className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
-              Chat
-            </button>
+                }}
+                className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                Chat
+              </button>
+              
+              <button 
+                onClick={() => {
+                  const enhancedChatWindow = document.getElementById('enhanced-chat-window');
+                  if (enhancedChatWindow) {
+                    const isHidden = enhancedChatWindow.classList.contains('hidden');
+                    
+                    if (isHidden) {
+                      // Show and center the window
+                      enhancedChatWindow.classList.remove('hidden');
+                      
+                      // Center the window
+                      setTimeout(() => {
+                        const windowWidth = window.innerWidth;
+                        const windowHeight = window.innerHeight;
+                        const chatWidth = 500; // Default width
+                        const chatHeight = 700; // Default height
+                        
+                        const centerX = Math.max(0, (windowWidth - chatWidth) / 2);
+                        const centerY = Math.max(0, (windowHeight - chatHeight) / 2);
+                        
+                        enhancedChatWindow.style.left = `${centerX}px`;
+                        enhancedChatWindow.style.top = `${centerY}px`;
+                      }, 10);
+                    } else {
+                      // Hide the window
+                      enhancedChatWindow.classList.add('hidden');
+                    }
+                  } else {
+                    console.error('Enhanced chat window not found. Please refresh the page.');
+                  }
+                }}
+                className="flex items-center gap-2 text-purple-600 hover:text-purple-800 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Enhanced Chat
+              </button>
+            </>
           )}
           {user && (user.role === 'admin' || user.role === 'hod') && (
             <Link to="/users">User Management</Link>
