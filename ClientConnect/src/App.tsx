@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { SettingsProvider } from './contexts/SettingsContext';
+import usePageTitle from './hooks/usePageTitle';
 import Navbar from './components/Navbar';
 import ChatWindow from './components/ChatWindow';
 import EnhancedChatWindow from './components/chat/EnhancedChatWindow';
@@ -32,7 +33,8 @@ function App() {
 }
 
 function AppContent() {
-  // const location = useLocation();
+  // Set dynamic page title
+  usePageTitle();
 
   return (
     <>

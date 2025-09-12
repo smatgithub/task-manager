@@ -15,19 +15,21 @@ const Dashboard = () => {
     }
   }, [navigate]);
 
-  if (!user) return <p className="p-6 text-center text-gray-600">Loading your dashboard...</p>;
+  if (!user) return <p className="p-6 text-center text-slate-300">Loading your dashboard...</p>;
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-100 to-blue-200 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-xl shadow-xl text-center w-full max-w-lg space-y-4">
-        <h1 className="text-3xl font-bold text-indigo-700">Welcome, {user.name}!</h1>
-        <p className="text-gray-700 text-sm">Email: {user.email}</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 flex items-center justify-center">
+      <div className="bg-slate-800/90 backdrop-blur-sm border border-blue-500/30 p-8 rounded-xl shadow-2xl text-center w-full max-w-lg space-y-4">
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+          Welcome, {user.name}!
+        </h1>
+        <p className="text-slate-300 text-sm">Email: {user.email}</p>
 
         <div className="mt-6 space-y-2">
-          <p className="text-gray-600">
-            You are now logged into the <strong>E-Flow</strong> task management system.
+          <p className="text-slate-300">
+            You are now logged into the <strong className="text-blue-400">E-Flow</strong> task management system.
           </p>
-          <p className="text-gray-500 text-sm">
+          <p className="text-slate-400 text-sm">
             Use the navigation menu to manage your tasks, update your profile, or view team boards.
           </p>
         </div>
@@ -35,7 +37,7 @@ const Dashboard = () => {
         <div className="mt-6">
           <Link
             to="/UserTasksBoard"
-            className="inline-block px-6 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
+            className="inline-block px-6 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 transition-all duration-300 shadow-lg hover:shadow-blue-500/25"
           >
             Go to Task Board
           </Link>

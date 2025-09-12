@@ -26,18 +26,18 @@ export default function TaskBoard({ empId }) {
       <div className="w-full max-w-none px-4 py-6 space-y-6 relative z-10">
 
         {/* Header + Toolbar */}
-        <div className="bg-gradient-to-r from-slate-800/50 to-slate-700/50 backdrop-blur-sm rounded-2xl shadow-2xl border border-blue-500/30 p-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            <div className="flex items-center space-x-6">
-              <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-500 bg-clip-text text-transparent">My Task Board</h2>
-              <div className="hidden sm:flex items-center space-x-3 text-sm text-slate-300">
-                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+        <div className="bg-gradient-to-r from-slate-800/50 to-slate-700/50 backdrop-blur-sm rounded-xl shadow-xl border border-blue-500/30 p-3">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+            <div className="flex items-center space-x-3">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-500 bg-clip-text text-transparent">My Task Board</h2>
+              <div className="hidden sm:flex items-center space-x-2 text-xs text-slate-300">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                 <span className="font-medium">Active</span>
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-4">
-              <button className="group px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl hover:from-blue-500 hover:to-cyan-500 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-500/25 flex items-center space-x-3 font-semibold">
-                <svg className="w-5 h-5 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex flex-wrap items-center gap-2">
+              <button className="group px-3 py-1.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-md hover:from-blue-500 hover:to-cyan-500 transition-all duration-200 flex items-center space-x-1.5 font-medium text-xs">
+                <svg className="w-3.5 h-3.5 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
                 <span className="hidden sm:inline">New Task</span>

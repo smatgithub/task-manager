@@ -52,11 +52,11 @@ const Navbar = () => {
 
   return (
     <header className="bg-gradient-to-r from-slate-900 to-slate-800 shadow-2xl border-b border-blue-500/30 fixed top-0 w-full z-50 backdrop-blur-sm">
-      <nav className="w-full px-4 lg:px-8 py-3">
+      <nav className="w-full px-4 lg:px-8 py-2">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
-            <Link to="/" className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent font-bold text-2xl hover:from-blue-300 hover:to-cyan-300 transition-all duration-300">
+            <Link to="/" className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent font-bold text-xl hover:from-blue-300 hover:to-cyan-300 transition-all duration-300">
               ClientConnect
             </Link>
           </div>
@@ -64,7 +64,7 @@ const Navbar = () => {
           {/* Main Navigation */}
           <div ref={dropdownRef} className="hidden lg:flex items-center space-x-8">
             {!user && (
-              <Link to="/" className="text-slate-300 hover:text-blue-400 transition-colors duration-200 font-medium text-lg">
+              <Link to="/" className="text-slate-300 hover:text-blue-400 transition-colors duration-200 font-medium text-base">
                 Home
               </Link>
             )}
@@ -74,7 +74,7 @@ const Navbar = () => {
               <div className="relative">
                 <button
                   onClick={() => handleDropdownToggle('tasks')}
-                  className="flex items-center gap-2 text-slate-300 hover:text-blue-400 transition-colors duration-200 font-medium text-lg"
+                  className="flex items-center gap-2 text-slate-300 hover:text-blue-400 transition-colors duration-200 font-medium text-base"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -135,7 +135,7 @@ const Navbar = () => {
               <div className="relative">
                 <button
                   onClick={() => handleDropdownToggle('communication')}
-                  className="flex items-center gap-2 text-slate-300 hover:text-blue-400 transition-colors duration-200 font-medium text-lg"
+                  className="flex items-center gap-2 text-slate-300 hover:text-blue-400 transition-colors duration-200 font-medium text-base"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -186,7 +186,7 @@ const Navbar = () => {
               <div className="relative">
                 <button
                   onClick={() => handleDropdownToggle('settings')}
-                  className="flex items-center gap-2 text-slate-300 hover:text-blue-400 transition-colors duration-200 font-medium text-lg"
+                  className="flex items-center gap-2 text-slate-300 hover:text-blue-400 transition-colors duration-200 font-medium text-base"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -303,10 +303,10 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Menu Button */}
-        <div className="lg:hidden mt-3">
+        <div className="lg:hidden mt-2">
           <button
             onClick={() => handleDropdownToggle('mobile')}
-            className="flex items-center gap-2 text-slate-300 hover:text-blue-400 transition-colors duration-200 font-medium"
+            className="flex items-center gap-2 text-slate-300 hover:text-blue-400 transition-colors duration-200 font-medium text-sm"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
