@@ -146,26 +146,29 @@ const AdminTaskReview = () => {
   }
 
   return (
-    <div className="h-screen bg-gray-50 flex flex-col">
+    <div className="h-screen bg-slate-900 flex flex-col">
       {/* Debug Info */}
-      <div className="bg-yellow-100 border-b p-2 text-xs">
+      <div className="bg-amber-900/20 border-b border-amber-500/30 p-2 text-xs text-amber-200">
         <strong>Debug:</strong> User: {user?.name} | Role: {user?.role} | Employees: {employees.length} | Loading: {loading.toString()} | Error: {error || 'None'}
       </div>
       
       {/* Header */}
-      <div className="bg-white shadow-sm border-b flex-shrink-0">
+      <div className="bg-slate-800 shadow-lg border-b border-slate-700 flex-shrink-0">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between mb-3">
-            <h1 className="text-xl font-bold text-gray-900">Daily Task Monitoring</h1>
+            <h1 className="text-xl font-bold text-white">Daily Task Monitoring</h1>
             <div className="flex items-center gap-3">
-              <button className="bg-indigo-600 text-white px-3 py-1.5 rounded-md hover:bg-indigo-700 text-sm">
+              <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 text-sm font-medium shadow-lg transition-all duration-200 transform hover:scale-105">
+                <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
                 Create Ticket
               </button>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">{user.name}</span>
-                <span className="text-xs text-gray-500">({user.empId || 'N/A'})</span>
-                <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
-                  <span className="text-xs font-medium text-gray-600">
+                <span className="text-sm text-slate-300">{user.name}</span>
+                <span className="text-xs text-slate-400 bg-slate-700 px-2 py-1 rounded">({user.empId || 'N/A'})</span>
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+                  <span className="text-xs font-bold text-white">
                     {user.name?.charAt(0)?.toUpperCase()}
                   </span>
                 </div>
@@ -176,26 +179,29 @@ const AdminTaskReview = () => {
           {/* Date Filters */}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-gray-700">From Date:</label>
+              <label className="text-sm font-medium text-slate-300">From Date:</label>
               <input
                 type="date"
                 value={dateRange.fromDate}
                 onChange={(e) => setDateRange({...dateRange, fromDate: e.target.value})}
-                className="border border-gray-300 rounded-md px-2 py-1 text-sm w-32"
+                className="bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 text-sm w-36 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-gray-700">To Date:</label>
+              <label className="text-sm font-medium text-slate-300">To Date:</label>
               <input
                 type="date"
                 value={dateRange.toDate}
                 onChange={(e) => setDateRange({...dateRange, toDate: e.target.value})}
-                className="border border-gray-300 rounded-md px-2 py-1 text-sm w-32"
+                className="bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 text-sm w-36 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               <button
                 onClick={handleDateRangeUpdate}
-                className="bg-indigo-600 text-white px-3 py-1 rounded-md hover:bg-indigo-700 text-sm"
+                className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-4 py-2 rounded-lg hover:from-emerald-700 hover:to-teal-700 text-sm font-medium shadow-lg transition-all duration-200 transform hover:scale-105"
               >
+                <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
                 Update
               </button>
             </div>
@@ -205,7 +211,7 @@ const AdminTaskReview = () => {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Employee Sidebar */}
-        <div className="w-72 bg-white shadow-sm border-r flex-shrink-0 overflow-y-auto">
+        <div className="w-72 bg-slate-800 shadow-xl border-r border-slate-700 flex-shrink-0 overflow-y-auto">
           <EmployeeSidebar
             employees={employees}
             selectedEmployee={selectedEmployee}
@@ -214,24 +220,32 @@ const AdminTaskReview = () => {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto bg-slate-900">
           {employees.length === 0 ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
-                <h2 className="text-xl font-semibold text-gray-600 mb-2">No Employees Found</h2>
-                <p className="text-gray-500 mb-4">There are no employees in the system yet.</p>
+                <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-semibold text-slate-300 mb-2">No Employees Found</h2>
+                <p className="text-slate-400 mb-6">There are no employees in the system yet.</p>
                 <button 
                   onClick={fetchEmployees}
-                  className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-purple-700 font-medium shadow-lg transition-all duration-200 transform hover:scale-105"
                 >
+                  <svg className="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
                   Refresh
                 </button>
               </div>
             </div>
           ) : selectedEmployee ? (
-            <div className="p-4 space-y-4">
+            <div className="p-6 space-y-6">
               {/* Performance Metrics - Moved to main content area */}
-              <div className="bg-white rounded-lg shadow p-4">
+              <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-xl shadow-2xl p-6 border border-slate-600">
                 <PerformanceMetrics 
                   selectedEmployee={selectedEmployee}
                   dateRange={dateRange}
@@ -265,7 +279,13 @@ const AdminTaskReview = () => {
           ) : (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
-                <p className="text-gray-500 text-lg">Select an employee to view their task activity</p>
+                <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <p className="text-slate-300 text-lg font-medium">Select an employee to view their task activity</p>
+                <p className="text-slate-400 text-sm mt-2">Choose from the sidebar to get started</p>
               </div>
             </div>
           )}

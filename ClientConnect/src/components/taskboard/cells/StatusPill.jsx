@@ -2,10 +2,10 @@ import React, { useRef, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
 const OPTIONS = [
-  { key: 'OPEN',         label: 'Open',          cls: 'bg-gray-100 text-gray-700 ring-gray-200' },
-  { key: 'WORKING_ON_IT', label: 'Working on it', cls: 'bg-yellow-100 text-yellow-700 ring-yellow-200' },
-  { key: 'STUCK',        label: 'Stuck',         cls: 'bg-red-100 text-red-700 ring-red-200' },
-  { key: 'DONE',         label: 'Done',          cls: 'bg-green-100 text-green-700 ring-green-200' },
+  { key: 'OPEN',         label: 'Open',          cls: 'bg-slate-700/50 text-slate-300 ring-slate-600' },
+  { key: 'WORKING_ON_IT', label: 'Working on it', cls: 'bg-yellow-900/30 text-yellow-400 ring-yellow-500/50' },
+  { key: 'STUCK',        label: 'Stuck',         cls: 'bg-red-900/30 text-red-400 ring-red-500/50' },
+  { key: 'DONE',         label: 'Done',          cls: 'bg-green-900/30 text-green-400 ring-green-500/50' },
 ];
 
 function classFor(status) {
@@ -70,19 +70,19 @@ export default function StatusPill({ status, onChange }) {
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
-        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${classFor(status)}`}
+        className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset transition-all duration-300 hover:scale-105 ${classFor(status)}`}
         aria-haspopup="listbox"
         aria-expanded={open}
       >
         {current.label.toUpperCase()}
-        <svg className="ml-1 h-2.5 w-2.5 opacity-70" viewBox="0 0 20 20" fill="currentColor"><path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"/></svg>
+        <svg className="ml-2 h-3 w-3 opacity-70" viewBox="0 0 20 20" fill="currentColor"><path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"/></svg>
       </button>
 
       {open && createPortal(
         <ul
           ref={dropdownRef}
           role="listbox"
-          className="fixed z-[9999] w-44 rounded-lg border border-gray-200 bg-white shadow-2xl overflow-hidden"
+          className="fixed z-[9999] w-48 rounded-xl border border-slate-600 bg-gradient-to-r from-slate-800/90 to-slate-700/90 backdrop-blur-sm shadow-2xl overflow-hidden"
           style={{ 
             top: position.top,
             left: position.left,
@@ -102,10 +102,10 @@ export default function StatusPill({ status, onChange }) {
                   onChange(opt.key);
                 }
               }}
-              className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-50 flex items-center justify-between ${opt.key === current.key ? 'bg-gray-50' : ''}`}
+              className={`px-4 py-3 text-sm cursor-pointer hover:bg-slate-700/50 flex items-center justify-between transition-all duration-200 ${opt.key === current.key ? 'bg-slate-700/50' : ''}`}
             >
-              <span>{opt.label}</span>
-              <span className={`ml-2 inline-block rounded-full px-2 py-0.5 text-[10px] ring-1 ring-inset ${opt.cls}`}>
+              <span className="text-slate-200 font-medium">{opt.label}</span>
+              <span className={`ml-3 inline-block rounded-full px-2 py-1 text-[10px] ring-1 ring-inset font-semibold ${opt.cls}`}>
                 {opt.label}
               </span>
             </li>

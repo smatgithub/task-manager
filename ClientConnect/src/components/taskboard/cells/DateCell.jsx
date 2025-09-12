@@ -23,12 +23,12 @@ export default function DateCell({ iso }) {
   
   if (!formatted) {
     return (
-      <span className="text-gray-400 text-sm">—</span>
+      <span className="text-slate-400 text-sm font-medium">—</span>
     );
   }
   
   return (
-    <span className={`text-sm ${overdue ? 'text-red-600 font-medium' : 'text-gray-700'}`}>
+    <span className={`text-sm font-semibold ${overdue ? 'text-red-400 font-bold' : 'text-slate-300'}`}>
       {formatted}
     </span>
   );

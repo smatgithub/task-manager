@@ -3,13 +3,13 @@ import React from 'react';
 export default function OwnerCell({ assignees = [] }) {
   if (!assignees.length) {
     return (
-      <div className="flex items-center text-gray-400">
-        <div className="w-5 h-5 bg-gray-200 rounded-full flex items-center justify-center">
-          <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+      <div className="flex items-center text-slate-400">
+        <div className="w-6 h-6 bg-slate-700 rounded-full flex items-center justify-center border border-slate-600">
+          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
           </svg>
         </div>
-        <span className="ml-1.5 text-xs">—</span>
+        <span className="ml-2 text-xs font-medium">—</span>
       </div>
     );
   }
@@ -19,10 +19,10 @@ export default function OwnerCell({ assignees = [] }) {
   
   return (
     <div className="flex items-center">
-      <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-medium">
+      <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg">
         {displayName.charAt(0)}
       </div>
-      <span className="ml-1.5 text-xs text-gray-800 font-medium">{displayName}</span>
+      <span className="ml-2 text-xs text-slate-200 font-semibold">{displayName}</span>
     </div>
   );
 }

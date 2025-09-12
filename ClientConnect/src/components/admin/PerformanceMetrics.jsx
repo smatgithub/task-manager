@@ -83,36 +83,45 @@ const PerformanceMetrics = ({ selectedEmployee, dateRange }) => {
           </svg>
           {/* Percentage text */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-lg font-bold text-gray-700">
+            <span className="text-lg font-bold text-white">
               {percentage.toFixed(1)}%
             </span>
           </div>
         </div>
-        <span className="text-xs text-gray-600 mt-2 text-center">{label}</span>
+        <span className="text-xs text-slate-300 mt-2 text-center font-medium">{label}</span>
       </div>
     );
   };
 
   return (
     <div className="flex items-center justify-between">
-      <div className="text-sm text-gray-600">
-        <span className="font-medium">Performance Metrics</span>
-        <span className="ml-2">Week: {metrics.week}</span>
+      <div className="text-sm text-slate-300">
+        <span className="font-semibold text-lg text-white">Performance Metrics</span>
+        <div className="flex items-center gap-2 mt-1">
+          <span className="text-slate-400">Week:</span>
+          <span className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-3 py-1 rounded-full text-sm font-bold">
+            {metrics.week}
+          </span>
+        </div>
       </div>
       
-      <div className="flex items-center gap-6">
-        <CircularProgress
-          percentage={metrics.notDoneScore}
-          color="text-green-500"
-          label="Not Done Score"
-          size={60}
-        />
-        <CircularProgress
-          percentage={metrics.notDoneOnTimeScore}
-          color="text-red-500"
-          label="Not Done on Time Score"
-          size={60}
-        />
+      <div className="flex items-center gap-8">
+        <div className="text-center">
+          <CircularProgress
+            percentage={metrics.notDoneScore}
+            color="text-emerald-500"
+            label="Not Done Score"
+            size={70}
+          />
+        </div>
+        <div className="text-center">
+          <CircularProgress
+            percentage={metrics.notDoneOnTimeScore}
+            color="text-red-500"
+            label="Not Done on Time Score"
+            size={70}
+          />
+        </div>
       </div>
     </div>
   );

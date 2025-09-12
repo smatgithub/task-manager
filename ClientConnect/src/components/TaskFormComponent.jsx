@@ -8,13 +8,13 @@ function DailyFields({ inputBase, labelBase, dailyTask, setDailyTask, dailyAssig
       <div>
         <label className={labelBase}>Task Description</label>
         <textarea
-          className={inputBase + (errors.description ? ' border-red-500 ring-red-300' : '')}
+          className={inputBase + (errors.description ? ' border-red-500 ring-red-400' : '')}
           placeholder="Enter task description"
           value={dailyTask.description}
           onChange={(e) => setDailyTask({ ...dailyTask, description: e.target.value })}
           rows={3}
         />
-        {errors.description && <p className="text-sm text-red-600 mt-1">{errors.description}</p>}
+        {errors.description && <p className="text-sm text-red-400 mt-2">{errors.description}</p>}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -25,14 +25,14 @@ function DailyFields({ inputBase, labelBase, dailyTask, setDailyTask, dailyAssig
             onChange={setDailyAssignee}
             inputClassName={inputBase}
           />
-          {errors.assignees && <p className="text-sm text-red-600 mt-1">{errors.assignees}</p>}
-          {errors['assignees[0].userId'] && <p className="text-sm text-red-600 mt-1">{errors['assignees[0].userId']}</p>}
+          {errors.assignees && <p className="text-sm text-red-400 mt-2">{errors.assignees}</p>}
+          {errors['assignees[0].userId'] && <p className="text-sm text-red-400 mt-2">{errors['assignees[0].userId']}</p>}
         </div>
         <div>
           <label className={labelBase}>Start Date</label>
           <input
             type="date"
-            className={inputBase + (errors.dateRange ? ' border-red-500 ring-red-300' : '')}
+            className={inputBase + (errors.dateRange ? ' border-red-500 ring-red-400' : '')}
             value={dailyTask.startDate}
             onChange={(e) => setDailyTask({ ...dailyTask, startDate: e.target.value })}
           />
@@ -43,11 +43,11 @@ function DailyFields({ inputBase, labelBase, dailyTask, setDailyTask, dailyAssig
         <label className={labelBase}>End Date</label>
         <input
           type="date"
-          className={inputBase + (errors.dateRange ? ' border-red-500 ring-red-300' : '')}
+          className={inputBase + (errors.dateRange ? ' border-red-500 ring-red-400' : '')}
           value={dailyTask.endDate}
           onChange={(e) => setDailyTask({ ...dailyTask, endDate: e.target.value })}
         />
-        {errors.dateRange && <p className="text-sm text-red-600 mt-1">{errors.dateRange}</p>}
+        {errors.dateRange && <p className="text-sm text-red-400 mt-2">{errors.dateRange}</p>}
       </div>
     </>
   );
@@ -59,13 +59,13 @@ function OtdFields({ inputBase, labelBase, otdTask, setOtdTask, otdAssignee, set
       <div>
         <label className={labelBase}>Task Description</label>
         <textarea
-          className={inputBase + (errors.description ? ' border-red-500 ring-red-300' : '')}
+          className={inputBase + (errors.description ? ' border-red-500 ring-red-400' : '')}
           placeholder="Enter task description"
           value={otdTask.description}
           onChange={(e) => setOtdTask({ ...otdTask, description: e.target.value })}
           rows={3}
         />
-        {errors.description && <p className="text-sm text-red-600 mt-1">{errors.description}</p>}
+        {errors.description && <p className="text-sm text-red-400 mt-2">{errors.description}</p>}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
@@ -76,13 +76,13 @@ function OtdFields({ inputBase, labelBase, otdTask, setOtdTask, otdAssignee, set
             onChange={setOtdAssignee}
             inputClassName={inputBase}
           />
-          {errors.assignees && <p className="text-sm text-red-600 mt-1">{errors.assignees}</p>}
-          {errors['assignees[0].userId'] && <p className="text-sm text-red-600 mt-1">{errors['assignees[0].userId']}</p>}
+          {errors.assignees && <p className="text-sm text-red-400 mt-2">{errors.assignees}</p>}
+          {errors['assignees[0].userId'] && <p className="text-sm text-red-400 mt-2">{errors['assignees[0].userId']}</p>}
         </div>
         <div>
           <label className={labelBase}>Frequency</label>
           <select
-            className={inputBase + (errors.frequency ? ' border-red-500 ring-red-300' : '')}
+            className={inputBase + (errors.frequency ? ' border-red-500 ring-red-400' : '')}
             value={otdTask.frequency}
             onChange={(e) => setOtdTask({ ...otdTask, frequency: e.target.value })}
           >
@@ -92,7 +92,7 @@ function OtdFields({ inputBase, labelBase, otdTask, setOtdTask, otdAssignee, set
             <option>monthly</option>
             <option>quarterly</option>
           </select>
-          {errors.frequency && <p className="text-sm text-red-600 mt-1">{errors.frequency}</p>}
+          {errors.frequency && <p className="text-sm text-red-400 mt-2">{errors.frequency}</p>}
         </div>
         <div>
           <label className={labelBase}>Weekday/Month</label>
@@ -119,7 +119,7 @@ function OtdFields({ inputBase, labelBase, otdTask, setOtdTask, otdAssignee, set
           <label className={labelBase}>Start Date</label>
           <input
             type="date"
-            className={inputBase + (errors.dateRange ? ' border-red-500 ring-red-300' : '')}
+            className={inputBase + (errors.dateRange ? ' border-red-500 ring-red-400' : '')}
             value={otdTask.startDate}
             onChange={(e) => setOtdTask({ ...otdTask, startDate: e.target.value })}
           />
@@ -128,13 +128,13 @@ function OtdFields({ inputBase, labelBase, otdTask, setOtdTask, otdAssignee, set
           <label className={labelBase}>End Date</label>
           <input
             type="date"
-            className={inputBase + (errors.dateRange ? ' border-red-500 ring-red-300' : '')}
+            className={inputBase + (errors.dateRange ? ' border-red-500 ring-red-400' : '')}
             value={otdTask.endDate}
             onChange={(e) => setOtdTask({ ...otdTask, endDate: e.target.value })}
           />
         </div>
       </div>
-      {errors.dateRange && <p className="text-sm text-red-600 mt-1">{errors.dateRange}</p>}
+      {errors.dateRange && <p className="text-sm text-red-400 mt-2">{errors.dateRange}</p>}
     </>
   );
 }
@@ -145,13 +145,13 @@ function DelegationFields({ inputBase, labelBase, delegationTask, setDelegationT
       <div>
         <label className={labelBase}>Task Description *</label>
         <textarea
-          className={inputBase + (errors.description ? ' border-red-500 ring-red-300' : '')}
+          className={inputBase + (errors.description ? ' border-red-500 ring-red-400' : '')}
           placeholder="Enter task description"
           value={delegationTask.description}
           onChange={(e) => setDelegationTask({ ...delegationTask, description: e.target.value })}
           rows={3}
         />
-        {errors.description && <p className="text-sm text-red-600 mt-1">{errors.description}</p>}
+        {errors.description && <p className="text-sm text-red-400 mt-2">{errors.description}</p>}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
@@ -203,7 +203,7 @@ function DelegationFields({ inputBase, labelBase, delegationTask, setDelegationT
             onChange={setDelegatedBy}
             inputClassName={inputBase}
           />
-          {errors.delegatedById && <p className="text-sm text-red-600 mt-1">{errors.delegatedById}</p>}
+          {errors.delegatedById && <p className="text-sm text-red-400 mt-2">{errors.delegatedById}</p>}
         </div>
         <div>
           <AssignToAutocomplete
@@ -212,17 +212,17 @@ function DelegationFields({ inputBase, labelBase, delegationTask, setDelegationT
             onChange={setDelegatedTo}
             inputClassName={inputBase}
           />
-          {errors.delegatedToId && <p className="text-sm text-red-600 mt-1">{errors.delegatedToId}</p>}
+          {errors.delegatedToId && <p className="text-sm text-red-400 mt-2">{errors.delegatedToId}</p>}
         </div>
         <div>
           <label className={labelBase}>Target Date</label>
           <input
             type="date"
-            className={inputBase + (errors.targetDate ? ' border-red-500 ring-red-300' : '')}
+            className={inputBase + (errors.targetDate ? ' border-red-500 ring-red-400' : '')}
             value={delegationTask.targetDate}
             onChange={(e) => setDelegationTask({ ...delegationTask, targetDate: e.target.value })}
           />
-          {errors.targetDate && <p className="text-sm text-red-600 mt-1">{errors.targetDate}</p>}
+          {errors.targetDate && <p className="text-sm text-red-400 mt-2">{errors.targetDate}</p>}
         </div>
       </div>
 
@@ -249,10 +249,10 @@ const getAuthToken = () =>
 
 /* shared input classes so everything looks consistent */
 const inputBase =
-  'w-full rounded-xl border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 ' +
-  'px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400';
+  'w-full rounded-xl border border-slate-600 bg-slate-700/50 text-white placeholder:text-slate-400 ' +
+  'px-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300';
 
-const labelBase = 'block text-sm font-medium text-slate-700 mb-1.5';
+const labelBase = 'block text-sm font-medium text-slate-300 mb-2';
 
 export default function TaskFormComponent() {
   const [type, setType] = useState('daily'); // 'daily' | 'otd' | 'delegation'
@@ -412,10 +412,17 @@ export default function TaskFormComponent() {
 
 
   return (
-    <div className="min-h-screen bg-gray-100 py-10 px-4">
-      <div className="mx-auto max-w-4xl space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-black via-slate-900 to-black py-10 px-4 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-cyan-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl animate-pulse delay-500"></div>
+      </div>
+      
+      <div className="mx-auto max-w-4xl space-y-6 relative z-10">
         {/* Segmented control */}
-        <div className="bg-white border border-gray-200 shadow-sm rounded-2xl p-2 flex gap-2">
+        <div className="bg-gradient-to-r from-slate-800/50 to-slate-700/50 backdrop-blur-sm border border-blue-500/30 shadow-2xl rounded-2xl p-2 flex gap-2">
           {[
             { key: 'daily', label: 'Daily' },
             { key: 'otd', label: 'OTD' },
@@ -426,10 +433,10 @@ export default function TaskFormComponent() {
               type="button"
               onClick={() => setType(opt.key)}
               className={
-                'flex-1 rounded-xl px-4 py-2 text-sm font-medium transition ' +
+                'flex-1 rounded-xl px-6 py-3 text-sm font-semibold transition-all duration-300 transform hover:scale-105 ' +
                 (type === opt.key
-                  ? 'bg-pink-500 text-white shadow'
-                  : 'bg-white text-slate-700 hover:bg-slate-50 border border-gray-200')
+                  ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg shadow-blue-500/25'
+                  : 'bg-slate-700/50 text-slate-300 hover:bg-slate-600/50 border border-slate-600')
               }
             >
               {opt.label}
@@ -438,12 +445,12 @@ export default function TaskFormComponent() {
         </div>
 
         {/* Card */}
-        <section className="bg-white border border-gray-200 shadow-lg rounded-2xl p-6">
-          <div className="mb-6">
-            <h2 className="text-2xl font-semibold text-slate-900">
+        <section className="bg-gradient-to-r from-slate-800/50 to-slate-700/50 backdrop-blur-sm border border-blue-500/30 shadow-2xl rounded-2xl p-8">
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-500 bg-clip-text text-transparent">
               {type === 'daily' ? 'Daily Form' : type === 'otd' ? 'OTD Form' : 'Delegation Form'}
             </h2>
-            <p className="text-sm text-slate-500 mt-1">
+            <p className="text-slate-300 mt-2 text-lg">
               Fill in the fields below and submit to create a {type} task.
             </p>
           </div>
@@ -485,25 +492,40 @@ export default function TaskFormComponent() {
               />
             )}
 
-            <div className="pt-2">
+            <div className="pt-6">
               <button
                 type="submit"
                 disabled={submitting}
                 className={
-                  'inline-flex items-center gap-2 rounded-xl px-6 py-2.5 font-medium shadow focus:outline-none focus:ring-2 ' +
+                  'group inline-flex items-center gap-3 rounded-xl px-8 py-4 font-semibold shadow-lg focus:outline-none focus:ring-2 transition-all duration-300 transform hover:scale-105 ' +
                   (submitting
-                    ? 'bg-pink-400 text-white opacity-70 cursor-not-allowed'
-                    : 'bg-pink-500 text-white hover:bg-pink-600 focus:ring-pink-400')
+                    ? 'bg-slate-600 text-slate-300 opacity-70 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-500 hover:to-cyan-500 focus:ring-blue-500 shadow-blue-500/25')
                 }
               >
-                {submitting ? 'Saving…' : (type === 'delegation' ? 'Delegate' : 'Submit')}
+                {submitting ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Saving…</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    <span>{type === 'delegation' ? 'Delegate' : 'Submit'}</span>
+                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </>
+                )}
               </button>
             </div>
           </form>
         </section>
 
         {message && (
-          <div className="rounded-xl border border-pink-200 bg-pink-50 px-4 py-3 text-sm text-pink-900 shadow-sm">
+          <div className="rounded-xl border border-blue-500/50 bg-gradient-to-r from-slate-800/50 to-slate-700/50 backdrop-blur-sm px-6 py-4 text-sm text-slate-300 shadow-lg">
             {message}
           </div>
         )}

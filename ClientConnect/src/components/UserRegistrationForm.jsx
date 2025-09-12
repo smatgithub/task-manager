@@ -120,16 +120,16 @@ const UserRegistrationForm = ({ onSuccess, onCancel }) => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-xl shadow-lg">
-      <div className="mb-6">
-        <h2 className="text-3xl font-bold text-gray-800 mb-2">Create New User Profile</h2>
-        <p className="text-gray-600">Fill in the details below to create a new user account.</p>
+    <div className="max-w-2xl mx-auto p-8 bg-gradient-to-r from-slate-800/50 to-slate-700/50 backdrop-blur-sm rounded-2xl shadow-2xl border border-blue-500/30">
+      <div className="mb-8">
+        <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-500 bg-clip-text text-transparent mb-3">Create New User Profile</h2>
+        <p className="text-slate-300 text-lg">Fill in the details below to create a new user account.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Name Field */}
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="name" className="block text-sm font-medium text-slate-300 mb-3">
             Full Name *
           </label>
           <input
@@ -138,18 +138,18 @@ const UserRegistrationForm = ({ onSuccess, onCancel }) => {
             name="name"
             value={formData.name}
             onChange={handleChange}
-            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-              errors.name ? 'border-red-500' : 'border-gray-300'
+            className={`w-full px-4 py-4 bg-slate-700/50 border rounded-xl text-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 ${
+              errors.name ? 'border-red-500' : 'border-slate-600'
             }`}
             placeholder="Enter full name"
             disabled={loading}
           />
-          {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+          {errors.name && <p className="mt-2 text-sm text-red-400">{errors.name}</p>}
         </div>
 
         {/* Email Field */}
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-3">
             Email Address *
           </label>
           <input
@@ -158,19 +158,19 @@ const UserRegistrationForm = ({ onSuccess, onCancel }) => {
             name="email"
             value={formData.email}
             onChange={handleChange}
-            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-              errors.email ? 'border-red-500' : 'border-gray-300'
+            className={`w-full px-4 py-4 bg-slate-700/50 border rounded-xl text-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 ${
+              errors.email ? 'border-red-500' : 'border-slate-600'
             }`}
             placeholder="Enter email address"
             disabled={loading}
           />
-          {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+          {errors.email && <p className="mt-2 text-sm text-red-400">{errors.email}</p>}
         </div>
 
         {/* Password Fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-3">
               Password *
             </label>
             <input
@@ -179,17 +179,17 @@ const UserRegistrationForm = ({ onSuccess, onCancel }) => {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                errors.password ? 'border-red-500' : 'border-gray-300'
+              className={`w-full px-4 py-4 bg-slate-700/50 border rounded-xl text-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 ${
+                errors.password ? 'border-red-500' : 'border-slate-600'
               }`}
               placeholder="Enter password"
               disabled={loading}
             />
-            {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
+            {errors.password && <p className="mt-2 text-sm text-red-400">{errors.password}</p>}
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-300 mb-3">
               Confirm Password *
             </label>
             <input
@@ -198,19 +198,19 @@ const UserRegistrationForm = ({ onSuccess, onCancel }) => {
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+              className={`w-full px-4 py-4 bg-slate-700/50 border rounded-xl text-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 ${
+                errors.confirmPassword ? 'border-red-500' : 'border-slate-600'
               }`}
               placeholder="Confirm password"
               disabled={loading}
             />
-            {errors.confirmPassword && <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>}
+            {errors.confirmPassword && <p className="mt-2 text-sm text-red-400">{errors.confirmPassword}</p>}
           </div>
         </div>
 
         {/* Employee ID */}
         <div>
-          <label htmlFor="empId" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="empId" className="block text-sm font-medium text-slate-300 mb-3">
             Employee ID *
           </label>
           <input
@@ -219,18 +219,18 @@ const UserRegistrationForm = ({ onSuccess, onCancel }) => {
             name="empId"
             value={formData.empId}
             onChange={handleChange}
-            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-              errors.empId ? 'border-red-500' : 'border-gray-300'
+            className={`w-full px-4 py-4 bg-slate-700/50 border rounded-xl text-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 ${
+              errors.empId ? 'border-red-500' : 'border-slate-600'
             }`}
             placeholder="Enter employee ID"
             disabled={loading}
           />
-          {errors.empId && <p className="mt-1 text-sm text-red-600">{errors.empId}</p>}
+          {errors.empId && <p className="mt-2 text-sm text-red-400">{errors.empId}</p>}
         </div>
 
         {/* Department Field */}
         <div>
-          <label htmlFor="department" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="department" className="block text-sm font-medium text-slate-300 mb-3">
             Department *
           </label>
           <input
@@ -239,36 +239,44 @@ const UserRegistrationForm = ({ onSuccess, onCancel }) => {
             name="department"
             value={formData.department}
             onChange={handleChange}
-            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-              errors.department ? 'border-red-500' : 'border-gray-300'
+            className={`w-full px-4 py-4 bg-slate-700/50 border rounded-xl text-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 ${
+              errors.department ? 'border-red-500' : 'border-slate-600'
             }`}
             placeholder="Enter department name"
             disabled={loading}
           />
-          {errors.department && <p className="mt-1 text-sm text-red-600">{errors.department}</p>}
+          {errors.department && <p className="mt-2 text-sm text-red-400">{errors.department}</p>}
         </div>
 
         {/* Submit Error */}
         {errors.submit && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-600">{errors.submit}</p>
+          <div className="p-4 bg-red-900/30 border border-red-500/50 rounded-xl backdrop-blur-sm">
+            <p className="text-sm text-red-400">{errors.submit}</p>
           </div>
         )}
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 pt-6">
+        <div className="flex flex-col sm:flex-row gap-4 pt-8">
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="group flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 px-6 rounded-xl font-semibold hover:from-blue-500 hover:to-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
             {loading ? (
               <div className="flex items-center justify-center">
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                Creating User...
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-3"></div>
+                <span>Creating User...</span>
               </div>
             ) : (
-              'Create User Profile'
+              <div className="flex items-center justify-center">
+                <svg className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                </svg>
+                <span>Create User Profile</span>
+                <svg className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </div>
             )}
           </button>
           
@@ -277,9 +285,14 @@ const UserRegistrationForm = ({ onSuccess, onCancel }) => {
               type="button"
               onClick={onCancel}
               disabled={loading}
-              className="flex-1 bg-gray-200 text-gray-800 py-3 px-6 rounded-lg font-medium hover:bg-gray-300 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group flex-1 bg-gradient-to-r from-slate-600 to-slate-700 text-slate-200 py-4 px-6 rounded-xl font-semibold hover:from-slate-500 hover:to-slate-600 focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
-              Cancel
+              <div className="flex items-center justify-center">
+                <span>Cancel</span>
+                <svg className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
             </button>
           )}
         </div>

@@ -15,22 +15,29 @@ export default function TaskBoard({ empId }) {
   console.log('TaskBoard - Page:', page, 'TotalPages:', totalPages, 'CanPrev:', canPrev, 'CanNext:', canNext);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="w-full max-w-none px-4 py-6 space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-black via-slate-900 to-black relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-cyan-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl animate-pulse delay-500"></div>
+      </div>
+      
+      <div className="w-full max-w-none px-4 py-6 space-y-6 relative z-10">
 
         {/* Header + Toolbar */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div className="flex items-center space-x-4">
-              <h2 className="text-3xl font-bold text-gray-800">My Task Board</h2>
-              <div className="hidden sm:flex items-center space-x-2 text-sm text-gray-500">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span>Active</span>
+        <div className="bg-gradient-to-r from-slate-800/50 to-slate-700/50 backdrop-blur-sm rounded-2xl shadow-2xl border border-blue-500/30 p-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="flex items-center space-x-6">
+              <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-500 bg-clip-text text-transparent">My Task Board</h2>
+              <div className="hidden sm:flex items-center space-x-3 text-sm text-slate-300">
+                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="font-medium">Active</span>
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex flex-wrap items-center gap-4">
+              <button className="group px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl hover:from-blue-500 hover:to-cyan-500 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-500/25 flex items-center space-x-3 font-semibold">
+                <svg className="w-5 h-5 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
                 <span className="hidden sm:inline">New Task</span>
@@ -50,14 +57,17 @@ export default function TaskBoard({ empId }) {
         </div>
 
         {error && (
-          <div className="p-4 rounded-md bg-red-50 border border-red-200 text-red-700 text-sm">
+          <div className="p-6 rounded-xl bg-red-900/30 border border-red-500/50 backdrop-blur-sm text-red-400 text-sm shadow-lg">
             {error}
           </div>
         )}
 
         {loading && (
-          <div className="p-4 rounded-md bg-gray-50 border border-gray-200 text-gray-600 text-sm">
-            Loading tasks...
+          <div className="p-6 rounded-xl bg-slate-800/50 border border-slate-600 backdrop-blur-sm text-slate-300 text-sm shadow-lg">
+            <div className="flex items-center space-x-3">
+              <div className="w-5 h-5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+              <span>Loading tasks...</span>
+            </div>
           </div>
         )}
 
@@ -69,8 +79,8 @@ export default function TaskBoard({ empId }) {
 
         {/* Floating Action Button for Mobile */}
         <div className="fixed bottom-6 right-6 sm:hidden">
-          <button className="w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-colors flex items-center justify-center">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <button className="group w-16 h-16 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-full shadow-2xl hover:from-blue-500 hover:to-cyan-500 transition-all duration-300 transform hover:scale-110 flex items-center justify-center">
+            <svg className="w-7 h-7 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </button>

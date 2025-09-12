@@ -203,41 +203,46 @@ const ScoreSection = ({ selectedEmployee, dateRange }) => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow">
-      <div className="px-4 py-3 border-b">
-        <h2 className="text-lg font-semibold text-gray-900">SCORE</h2>
+    <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-xl shadow-2xl border border-slate-600">
+      <div className="px-6 py-4 border-b border-slate-600">
+        <h2 className="text-lg font-semibold text-white flex items-center">
+          <svg className="w-5 h-5 mr-2 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          SCORE
+        </h2>
       </div>
       
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50">
+          <thead className="bg-slate-700">
             <tr>
-              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Week</th>
-              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Daily</th>
-              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Not Done %</th>
-              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">OTD</th>
-              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Delg. Target</th>
-              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Delg. Reschedule</th>
-              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Delg. Done</th>
-              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Week</th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Daily</th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Not Done %</th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">OTD</th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Delg. Target</th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Delg. Reschedule</th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Delg. Done</th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Score</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-slate-800 divide-y divide-slate-700">
             {scoreData.map((row, index) => (
-              <tr key={index} className="hover:bg-gray-50">
-                <td className="px-2 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+              <tr key={index} className="hover:bg-slate-700 transition-colors duration-200">
+                <td className="px-3 py-3 whitespace-nowrap text-sm font-bold text-white">
                   {row.week}
                 </td>
-                <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-3 whitespace-nowrap text-sm text-slate-200">
                   {row.dailyTaskCnt}
                 </td>
-                <td className={`px-2 py-2 whitespace-nowrap text-sm font-medium ${getScoreColor(row.notDonePercent)}`}>
+                <td className={`px-3 py-3 whitespace-nowrap text-sm font-bold ${getScoreColor(row.notDonePercent)}`}>
                   {row.notDonePercent.toFixed(1)}
                 </td>
-                <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-3 whitespace-nowrap text-sm text-slate-200">
                   <div className="space-y-1 text-xs">
-                    <div>Total: {row.otd.total}</div>
-                    <div>Pending: {row.otd.prevPending}</div>
+                    <div className="text-slate-300">Total: <span className="text-white font-medium">{row.otd.total}</span></div>
+                    <div className="text-slate-300">Pending: <span className="text-white font-medium">{row.otd.prevPending}</span></div>
                     <div className={getScoreColor(row.otd.notDoneOnTimePercent)}>
                       OnTime%: {row.otd.notDoneOnTimePercent.toFixed(1)}
                     </div>
@@ -246,9 +251,9 @@ const ScoreSection = ({ selectedEmployee, dateRange }) => {
                     </div>
                   </div>
                 </td>
-                <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-3 whitespace-nowrap text-sm text-slate-200">
                   <div className="space-y-1 text-xs">
-                    <div>Req: {row.delgTargetDate.tdReq}</div>
+                    <div className="text-slate-300">Req: <span className="text-white font-medium">{row.delgTargetDate.tdReq}</span></div>
                     <div className={getScoreColor(row.delgTargetDate.tdDelayPercent)}>
                       Delay%: {row.delgTargetDate.tdDelayPercent.toFixed(1)}
                     </div>
@@ -257,29 +262,29 @@ const ScoreSection = ({ selectedEmployee, dateRange }) => {
                     </div>
                   </div>
                 </td>
-                <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-3 whitespace-nowrap text-sm text-slate-200">
                   <div className="space-y-1 text-xs">
-                    <div>Req: {row.delgReschedule.rdReq}</div>
+                    <div className="text-slate-300">Req: <span className="text-white font-medium">{row.delgReschedule.rdReq}</span></div>
                     <div className={getScoreColor(row.delgReschedule.rdNdPercent)}>
                       ND%: {row.delgReschedule.rdNdPercent.toFixed(1)}
                     </div>
                   </div>
                 </td>
-                <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-3 whitespace-nowrap text-sm text-slate-200">
                   <div className="space-y-1 text-xs">
-                    <div>Req: {row.delgDone.wcReq}</div>
-                    <div>ND: {row.delgDone.notDone}</div>
+                    <div className="text-slate-300">Req: <span className="text-white font-medium">{row.delgDone.wcReq}</span></div>
+                    <div className="text-slate-300">ND: <span className="text-white font-medium">{row.delgDone.notDone}</span></div>
                     <div className={getScoreColor(row.delgDone.wcNdPercent)}>
                       ND%: {row.delgDone.wcNdPercent.toFixed(1)}
                     </div>
                   </div>
                 </td>
-                <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-3 whitespace-nowrap text-sm text-slate-200">
                   <div className="space-y-1 text-xs">
-                    <div className={`font-medium ${getScoreColor(row.score.notDonePercent)}`}>
+                    <div className={`font-bold ${getScoreColor(row.score.notDonePercent)}`}>
                       Done%: {row.score.notDonePercent.toFixed(1)}
                     </div>
-                    <div className={`font-medium ${getScoreColor(row.score.notDoneOntimePercent)}`}>
+                    <div className={`font-bold ${getScoreColor(row.score.notDoneOntimePercent)}`}>
                       OnTime%: {row.score.notDoneOntimePercent.toFixed(1)}
                     </div>
                   </div>
