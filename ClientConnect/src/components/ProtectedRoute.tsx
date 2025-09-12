@@ -2,12 +2,19 @@ import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
 
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+  requiredPage?: string | null;
+  requiredRole?: string | null;
+  fallback?: React.ReactNode;
+}
+
 const ProtectedRoute = ({ 
   children, 
-  requiredPage, 
-  requiredRole, 
+  requiredPage = null, 
+  requiredRole = null, 
   fallback = null 
-}) => {
+}: ProtectedRouteProps) => {
   const { user, isAuthenticated } = useAuth();
   const { userSettings, appSettings, loading } = useSettings();
 
