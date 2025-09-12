@@ -4,6 +4,7 @@ const router = express.Router();
 // Controllers
 const taskUpdateController = require('../controllers/taskUpdateController');
 const TaskMaster = require('../models/TaskMaster');
+const { checkFeatureAccess } = require('../middleware/featureAccess');
 
 // If you already have auth middlewares, you can re-add them per route here.
 // Example:

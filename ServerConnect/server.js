@@ -32,13 +32,20 @@ const taskRoutes = require('./routes/tasks');
 const userRoutes = require('./routes/users');
 const chatRoutes = require('./routes/chat');
 const adminRoutes = require('./routes/admin');
+const settingsRoutes = require('./routes/settings');
+const pageAccessRoutes = require('./routes/pageAccess');
 
 // Auth middleware (your new robust one)
 const verifyToken = require('./middleware/verifyToken');
+const { checkMaintenanceMode } = require('./middleware/featureAccess');
 
 // Models
 const User = require('./models/User');
 const ChatMessage = require('./models/ChatMessage');
+const PageMaster = require('./models/PageMaster');
+const UserPageAccess = require('./models/UserPageAccess');
+const AppSettings = require('./models/AppSettings');
+const UserSettings = require('./models/UserSettings');
 
 const app = express();
 // When running behind a proxy/load balancer (Render/Cloudflare),
@@ -91,6 +98,9 @@ app.use(express.json());
 app.use(cookieParser());
 // Gzip/Brotli compression for faster static & API responses
 app.use(compression());
+
+// Maintenance mode check (before other routes)
+app.use(checkMaintenanceMode);
 
 // Passport
 require('./config/googleAuth')(passport);
@@ -170,12 +180,32 @@ app.get('/api/debug/users', async (req, res) => {
   }
 });
 
+// Debug endpoint to check page access setup
+app.get('/api/debug/page-access', async (req, res) => {
+  try {
+    const pageCount = await PageMaster.countDocuments();
+    const userAccessCount = await UserPageAccess.countDocuments();
+    const userCount = await User.countDocuments();
+    
+    res.json({ 
+      message: 'Page access setup status',
+      pageMasterCount: pageCount,
+      userAccessCount: userAccessCount,
+      userCount: userCount
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Protected resources
 // If every route in these routers requires auth, protect at the router level:
 app.use('/api/tasks', verifyToken, taskRoutes);
 app.use('/api/users', verifyToken, userRoutes);
 app.use('/api/chat', verifyToken, chatRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/page-access', pageAccessRoutes);
 
 /* =========================
    SPA Static (serve built React)

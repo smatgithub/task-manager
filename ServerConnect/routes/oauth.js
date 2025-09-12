@@ -24,6 +24,7 @@ function buildSuccessRedirect(user) {
     token, // front-end will read from query string
     name: user.name || '',
     email: user.email || '',
+    id: user._id || '',
   });
 
   return `${FRONTEND_URL}/oauth-success?${params.toString()}`;

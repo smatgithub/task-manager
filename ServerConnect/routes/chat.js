@@ -4,6 +4,7 @@ const ChatMessage = require('../models/ChatMessage');
 const User = require('../models/User');
 const chatController = require('../controllers/chatController');
 const groupChatController = require('../controllers/groupChatController');
+const { checkFeatureAccess } = require('../middleware/featureAccess');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -42,7 +43,7 @@ const upload = multer({
 });
 
 // Get chat history between two users
-router.get('/messages/:userId', async (req, res) => {
+router.get('/messages/:userId', checkFeatureAccess('chat'), async (req, res) => {
   try {
     const { userId } = req.params;
     const currentUserId = req.user.id || req.user.userId;
@@ -76,7 +77,7 @@ router.get('/messages/:userId', async (req, res) => {
 });
 
 // Get all conversations for current user
-router.get('/conversations', async (req, res) => {
+router.get('/conversations', checkFeatureAccess('chat'), async (req, res) => {
   try {
     const currentUserId = req.user.id || req.user.userId;
     console.log('Fetching conversations for user:', currentUserId);
@@ -192,7 +193,7 @@ router.put('/messages/:userId/read', async (req, res) => {
 });
 
 // Get all users for chat
-router.get('/users', async (req, res) => {
+router.get('/users', checkFeatureAccess('chat'), async (req, res) => {
   try {
     const currentUserId = req.user.id || req.user.userId;
     console.log('Fetching users for current user:', currentUserId);

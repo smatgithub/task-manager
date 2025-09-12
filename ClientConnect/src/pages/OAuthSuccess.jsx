@@ -11,6 +11,7 @@ const OAuthSuccess = () => {
     const token = params.get('token');
     const name = params.get('name');
     const email = params.get('email');
+    const id = params.get('id');
 
     if (token && name && email) {
       // Decode JWT token to get user role and other data
@@ -21,7 +22,7 @@ const OAuthSuccess = () => {
           email,
           role: payload.role || 'user',
           empId: payload.empId || null,
-          id: payload.id
+          id: payload.id || id
         };
         
         login(user, token); // Use context login method

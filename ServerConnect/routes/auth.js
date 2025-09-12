@@ -62,7 +62,7 @@ router.post('/login', async (req, res) => {
       { expiresIn: '1d' }
     );
 
-    res.json({ token, user: { name: user.name, email: user.email, role: user.role, empId: user.empId } });
+    res.json({ token, user: { _id: user._id, id: user._id, name: user.name, email: user.email, role: user.role, empId: user.empId } });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
