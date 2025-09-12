@@ -31,6 +31,7 @@ const oauthRoutes = require('./routes/oauth');
 const taskRoutes = require('./routes/tasks');
 const userRoutes = require('./routes/users');
 const chatRoutes = require('./routes/chat');
+const adminRoutes = require('./routes/admin');
 
 // Auth middleware (your new robust one)
 const verifyToken = require('./middleware/verifyToken');
@@ -174,6 +175,7 @@ app.get('/api/debug/users', async (req, res) => {
 app.use('/api/tasks', verifyToken, taskRoutes);
 app.use('/api/users', verifyToken, userRoutes);
 app.use('/api/chat', verifyToken, chatRoutes);
+app.use('/api/admin', adminRoutes);
 
 /* =========================
    SPA Static (serve built React)

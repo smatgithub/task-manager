@@ -12,6 +12,7 @@ import TaskForm from './pages/TaskFormPage'
 import UserProfile from './pages/UserProfile';
 import UserManagement from './pages/UserManagement';
 import RegisterPage from './pages/RegisterPage';
+import AdminTaskReview from './pages/AdminTaskReview';
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function AppContent() {
           <Route path="/tasksForm" element={<TaskForm />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/users" element={<UserManagement />} />
+          <Route path="/admin" element={<AdminTaskReview />} />
         </Routes>
       </div>
     </>
