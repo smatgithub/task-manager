@@ -8,7 +8,7 @@ const UserRegistrationForm = ({ onSuccess, onCancel }) => {
     password: '',
     confirmPassword: '',
     empId: '',
-    role: 'user', // Always user by default
+    role: 'user', // Default to user
     department: ''
   });
 
@@ -106,7 +106,7 @@ const UserRegistrationForm = ({ onSuccess, onCancel }) => {
         password: '',
         confirmPassword: '',
         empId: '',
-        role: 'user', // Always reset to user
+        role: 'user', // Reset to user
         department: ''
       });
       
@@ -246,6 +246,19 @@ const UserRegistrationForm = ({ onSuccess, onCancel }) => {
             disabled={loading}
           />
           {errors.department && <p className="mt-2 text-sm text-red-400">{errors.department}</p>}
+        </div>
+
+        {/* Role is fixed to 'user' - no selection allowed */}
+        <div>
+          <label className="block text-sm font-medium text-slate-300 mb-3">
+            User Role
+          </label>
+          <div className="w-full px-4 py-4 bg-slate-600/50 border border-slate-600 rounded-xl text-slate-300 cursor-not-allowed">
+            User - Standard access (Default for new registrations)
+          </div>
+          <p className="mt-2 text-xs text-slate-400">
+            ℹ️ Role assignment is managed by administrators after registration
+          </p>
         </div>
 
         {/* Submit Error */}

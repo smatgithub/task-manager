@@ -166,13 +166,44 @@ const getUserAccessControl = async (req, res) => {
     }
 
     // Combine pages with access status
-    const pagesWithAccess = pages.map(page => ({
-      ...page.toObject(),
-      hasAccess: accessMap[page.pageId]?.hasAccess || false,
-      grantedBy: accessMap[page.pageId]?.grantedBy || null,
-      grantedAt: accessMap[page.pageId]?.grantedAt || null,
-      notes: accessMap[page.pageId]?.notes || ''
-    }));
+    const pagesWithAccess = pages.map(page => {
+      let hasAccess = false;
+      
+      // First check if user has sufficient role for the page
+      const hasRequiredRole = page.requiredRole === 'any' || user.role === page.requiredRole;
+      
+      if (hasRequiredRole) {
+        // Check if there's an explicit access record
+        if (accessMap[page.pageId]) {
+          hasAccess = accessMap[page.pageId].hasAccess;
+        } else {
+          // No explicit record - use default based on page type
+          if (page.isSystemPage && page.requiredRole === 'any') {
+            hasAccess = true; // System pages with 'any' role are accessible by default
+          } else {
+            hasAccess = false; // All other pages require explicit permission
+          }
+        }
+      } else {
+        // User doesn't have required role
+        hasAccess = false;
+      }
+      
+      return {
+        ...page.toObject(),
+        hasAccess,
+        grantedBy: accessMap[page.pageId]?.grantedBy || 
+                   (user.role === 'admin' ? user : 
+                    (page.isSystemPage && page.requiredRole === 'any' ? user : null)),
+        grantedAt: accessMap[page.pageId]?.grantedAt || 
+                   (user.role === 'admin' ? new Date() : 
+                    (page.isSystemPage && page.requiredRole === 'any' ? new Date() : null)),
+        notes: accessMap[page.pageId]?.notes || 
+               (user.role === 'admin' ? 'Admin access - full permissions' : 
+                (page.isSystemPage && page.requiredRole === 'any' ? 'System page - default access' : '')),
+        groupName: page.groupName || 'Other'
+      };
+    });
 
     res.json({
       user,
@@ -191,7 +222,8 @@ const updateUserPageAccess = async (req, res) => {
       return res.status(403).json({ error: 'Access denied. Admin role required.' });
     }
 
-    const { userId, pageId, hasAccess, notes } = req.body;
+    const { userId } = req.params;
+    const { pageId, hasAccess, notes } = req.body;
 
     // Check if page exists
     const page = await PageMaster.findOne({ pageId });
@@ -203,6 +235,19 @@ const updateUserPageAccess = async (req, res) => {
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Validate role compatibility for permission assignment
+    if (hasAccess && page.requiredRole !== 'any' && user.role !== page.requiredRole) {
+      return res.status(400).json({ 
+        error: 'Cannot grant access: User role insufficient',
+        details: {
+          userRole: user.role,
+          requiredRole: page.requiredRole,
+          pageName: page.pageName,
+          suggestion: `User needs to be escalated to '${page.requiredRole}' role first`
+        }
+      });
     }
 
     // Update or create access record
@@ -235,11 +280,45 @@ const getAllUsersAccessSummary = async (req, res) => {
     
     const usersWithAccess = await Promise.all(
       users.map(async (user) => {
-        const accessCount = await UserPageAccess.countDocuments({ 
-          userId: user._id, 
-          hasAccess: true 
-        });
         const totalPages = await PageMaster.countDocuments({ isActive: true });
+        
+        // Calculate access count based on role and individual permissions
+        const allPages = await PageMaster.find({ isActive: true });
+        const userAccess = await UserPageAccess.find({ userId: user._id });
+        
+        // Create access map
+        const accessMap = {};
+        userAccess.forEach(access => {
+          accessMap[access.pageId] = access.hasAccess;
+        });
+        
+        let accessCount = 0;
+        allPages.forEach(page => {
+          let hasAccess = false;
+          
+          // First check if user has sufficient role for the page
+          const hasRequiredRole = page.requiredRole === 'any' || user.role === page.requiredRole;
+          
+          if (hasRequiredRole) {
+            // Check if there's an explicit access record
+            if (accessMap[page.pageId] !== undefined) {
+              // Use explicit permission (true or false)
+              hasAccess = accessMap[page.pageId];
+            } else {
+              // No explicit record - use default based on page type
+              if (page.isSystemPage && page.requiredRole === 'any') {
+                hasAccess = true; // System pages with 'any' role are accessible by default
+              } else {
+                hasAccess = false; // All other pages require explicit permission
+              }
+            }
+          } else {
+            // User doesn't have required role
+            hasAccess = false;
+          }
+          
+          if (hasAccess) accessCount++;
+        });
         
         return {
           ...user.toObject(),
@@ -264,11 +343,36 @@ const bulkUpdateUserAccess = async (req, res) => {
       return res.status(403).json({ error: 'Access denied. Admin role required.' });
     }
 
-    const { userId, pageAccesses } = req.body;
+    const { userId } = req.params;
+    const { pageAccesses } = req.body;
 
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Validate all page accesses before updating
+    const validationErrors = [];
+    for (const access of pageAccesses) {
+      if (access.hasAccess) {
+        const page = await PageMaster.findOne({ pageId: access.pageId });
+        if (page && page.requiredRole !== 'any' && user.role !== page.requiredRole) {
+          validationErrors.push({
+            pageId: access.pageId,
+            pageName: page.pageName,
+            userRole: user.role,
+            requiredRole: page.requiredRole,
+            suggestion: `User needs to be escalated to '${page.requiredRole}' role first`
+          });
+        }
+      }
+    }
+
+    if (validationErrors.length > 0) {
+      return res.status(400).json({ 
+        error: 'Cannot grant access: User role insufficient for some pages',
+        validationErrors
+      });
     }
 
     // Update multiple page accesses
@@ -322,6 +426,174 @@ const checkUserPageAccess = async (req, res) => {
   }
 };
 
+// Get role escalation information for a user
+const getUserRoleEscalationInfo = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied. Admin role required.' });
+    }
+
+    const { userId } = req.params;
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Get all pages that require higher roles than the user currently has
+    const allPages = await PageMaster.find({ isActive: true }).sort({ sortOrder: 1 });
+    
+    const roleEscalationInfo = {
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        currentRole: user.role
+      },
+      pagesRequiringEscalation: [],
+      roleHierarchy: {
+        user: ['user'],
+        hod: ['user', 'hod'],
+        admin: ['user', 'hod', 'admin']
+      }
+    };
+
+    // Find pages that require higher roles
+    allPages.forEach(page => {
+      if (page.requiredRole !== 'any' && page.requiredRole !== user.role) {
+        const isHigherRole = ['user', 'hod', 'admin'].indexOf(page.requiredRole) > 
+                            ['user', 'hod', 'admin'].indexOf(user.role);
+        
+        if (isHigherRole) {
+          roleEscalationInfo.pagesRequiringEscalation.push({
+            pageId: page.pageId,
+            pageName: page.pageName,
+            pageDescription: page.pageDescription,
+            requiredRole: page.requiredRole,
+            category: page.category,
+            groupName: page.groupName
+          });
+        }
+      }
+    });
+
+    res.json(roleEscalationInfo);
+  } catch (error) {
+    console.error('Error fetching user role escalation info:', error);
+    res.status(500).json({ error: 'Failed to fetch role escalation info' });
+  }
+};
+
+// Update user role
+const updateUserRole = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied. Admin role required.' });
+    }
+
+    const { userId } = req.params;
+    const { newRole } = req.body;
+
+    // Validate role
+    if (!['user', 'hod', 'admin'].includes(newRole)) {
+      return res.status(400).json({ error: 'Invalid role. Must be user, hod, or admin' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const oldRole = user.role;
+    
+    // Update user role
+    user.role = newRole;
+    await user.save();
+
+    // Auto-grant permissions based on new role, but respect existing individual permissions
+    const allPages = await PageMaster.find({ isActive: true });
+    const permissionUpdates = [];
+
+    for (const page of allPages) {
+      let shouldHaveAccess = false;
+      
+      // Check if user has sufficient role for the page
+      const hasRequiredRole = page.requiredRole === 'any' || newRole === page.requiredRole;
+      
+      if (hasRequiredRole) {
+        // Check if there's already an explicit access record
+        const existingAccess = await UserPageAccess.findOne({ userId, pageId: page.pageId });
+        
+        if (existingAccess) {
+          // Keep existing individual permission, but update notes
+          permissionUpdates.push(
+            UserPageAccess.findOneAndUpdate(
+              { userId, pageId: page.pageId },
+              {
+                grantedBy: req.user.id,
+                grantedAt: new Date(),
+                notes: `Role changed from ${oldRole} to ${newRole} - existing permission maintained`
+              },
+              { new: true }
+            )
+          );
+        } else {
+          // No existing record - grant based on page type
+          if (page.isSystemPage && page.requiredRole === 'any') {
+            shouldHaveAccess = true; // System pages with 'any' role are accessible by default
+          } else {
+            shouldHaveAccess = false; // All other pages require explicit permission
+          }
+          
+          // Create access record
+          permissionUpdates.push(
+            UserPageAccess.findOneAndUpdate(
+              { userId, pageId: page.pageId },
+              {
+                hasAccess: shouldHaveAccess,
+                grantedBy: req.user.id,
+                grantedAt: new Date(),
+                notes: `Auto-granted due to role change from ${oldRole} to ${newRole}`
+              },
+              { upsert: true, new: true }
+            )
+          );
+        }
+      } else {
+        // User doesn't have required role - revoke access
+        permissionUpdates.push(
+          UserPageAccess.findOneAndUpdate(
+            { userId, pageId: page.pageId },
+            {
+              hasAccess: false,
+              grantedBy: req.user.id,
+              grantedAt: new Date(),
+              notes: `Access revoked due to role change from ${oldRole} to ${newRole} - insufficient role`
+            },
+            { upsert: true, new: true }
+          )
+        );
+      }
+    }
+
+    await Promise.all(permissionUpdates);
+
+    res.json({ 
+      message: 'User role updated successfully',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        oldRole,
+        newRole
+      }
+    });
+  } catch (error) {
+    console.error('Error updating user role:', error);
+    res.status(500).json({ error: 'Failed to update user role' });
+  }
+};
+
 module.exports = {
   initializePageMaster,
   getAllPages,
@@ -329,5 +601,7 @@ module.exports = {
   updateUserPageAccess,
   getAllUsersAccessSummary,
   bulkUpdateUserAccess,
-  checkUserPageAccess
+  checkUserPageAccess,
+  getUserRoleEscalationInfo,
+  updateUserRole
 };

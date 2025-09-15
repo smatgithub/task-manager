@@ -63,7 +63,7 @@ function AppContent() {
             </ProtectedRoute>
           } />
           <Route path="/profile" element={
-            <ProtectedRoute requiredPage="profileManagement">
+            <ProtectedRoute requiredPage="profile">
               <UserProfile />
             </ProtectedRoute>
           } />
@@ -73,7 +73,7 @@ function AppContent() {
             </ProtectedRoute>
           } />
           <Route path="/admin" element={
-            <ProtectedRoute requiredRole="admin">
+            <ProtectedRoute requiredPage="adminTaskReview">
               <AdminTaskReview />
             </ProtectedRoute>
           } />
@@ -88,7 +88,7 @@ function AppContent() {
             </ProtectedRoute>
           } />
           <Route path="/user-access-control" element={
-            <ProtectedRoute requiredRole="admin">
+            <ProtectedRoute requiredPage="userAccessControl">
               <UserAccessControl />
             </ProtectedRoute>
           } />

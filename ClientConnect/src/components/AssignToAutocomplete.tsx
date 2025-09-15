@@ -28,7 +28,7 @@ export default function AssignToAutocomplete({
   disabled = false,
   label,
   placeholder = "Type name, email, or EmpID",
-  inputClassName = "w-full rounded-xl border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400",
+  inputClassName = "w-full rounded-xl border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400",
   containerClassName = "w-full",
   minChars = 1,
   showOnFocus = true,
@@ -286,8 +286,8 @@ export default function AssignToAutocomplete({
                   key={`${opt.id}`}
                   role="option"
                   aria-selected={idx === activeIndex}
-                  className={`px-3 py-2 cursor-pointer hover:bg-pink-50 ${
-                    idx === activeIndex ? "bg-pink-100" : ""
+                  className={`px-3 py-2 cursor-pointer hover:bg-green-50 ${
+                    idx === activeIndex ? "bg-green-100" : ""
                   }`}
                   onMouseEnter={() => setActiveIndex(idx)}
                   onMouseDown={(e) => e.preventDefault()}
@@ -309,13 +309,13 @@ export default function AssignToAutocomplete({
       </div>
 
       {value && (
-        <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-pink-200 bg-pink-50 px-3 py-1 text-sm">
+        <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-3 py-1 text-sm">
           <span>{value.label}</span>
           {!!value.empId && (
             <span className="text-gray-500">• EmpID {value.empId}</span>
           )}
           <button
-            className="ml-1 text-pink-600 hover:underline"
+            className="ml-1 text-green-600 hover:underline"
             onClick={clearSelection}
             type="button"
           >

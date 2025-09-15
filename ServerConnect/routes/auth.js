@@ -2,16 +2,21 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const PageMaster = require('../models/PageMaster');
+const UserPageAccess = require('../models/UserPageAccess');
 
 const router = express.Router();
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
-  const { name, email, password, empId, role } = req.body;
+  const { name, email, password, empId, role, department } = req.body;
 
   try {
     let user = await User.findOne({ email });
     if (user) return res.status(400).json({ message: 'User already exists' });
+
+    // Force role to 'user' for new registrations - no role selection allowed
+    const userRole = 'user';
 
     const hashedPwd = await bcrypt.hash(password, 10);
 
@@ -20,13 +25,49 @@ router.post('/register', async (req, res) => {
       email,
       password: hashedPwd,
       empId,
-      role,
+      role: userRole, // Always 'user' for new registrations
+      department,
       authProvider: 'local'
     });
 
     await user.save();
 
-    res.status(201).json({ message: 'User registered successfully' });
+    // Create page access records for system pages
+    try {
+      const systemPages = await PageMaster.find({ 
+        isSystemPage: true, 
+        isActive: true 
+      }).select('pageId');
+
+      const accessRecords = systemPages.map(page => ({
+        userId: user._id,
+        pageId: page.pageId,
+        hasAccess: true, // Grant access to system pages by default
+        grantedBy: user._id, // Self-granted during registration
+        grantedAt: new Date(),
+        notes: 'Auto-granted during user registration'
+      }));
+
+      if (accessRecords.length > 0) {
+        await UserPageAccess.insertMany(accessRecords);
+        console.log(`Created ${accessRecords.length} page access records for user ${user.email}`);
+      }
+    } catch (accessError) {
+      console.error('Error creating page access records:', accessError);
+      // Don't fail registration if page access creation fails
+    }
+
+    res.status(201).json({ 
+      message: 'User registered successfully',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        empId: user.empId,
+        department: user.department
+      }
+    });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }

@@ -25,11 +25,61 @@ export const SettingsProvider = ({ children }) => {
     }
   }, [isAuthenticated, token, user]);
 
+  // Add global refresh mechanism
+  useEffect(() => {
+    const handleRefreshPermissions = async () => {
+      if (isAuthenticated && token) {
+        try {
+          const pageAccessResponse = await fetch('/api/page-access/my-access', {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (pageAccessResponse.ok) {
+            const pageAccessData = await pageAccessResponse.json();
+            setUserSettings(prev => ({
+              ...prev,
+              pageAccess: pageAccessData.pageAccess || {},
+              user: pageAccessData.user || prev?.user
+            }));
+          }
+        } catch (error) {
+          console.error('Error refreshing page access:', error);
+        }
+      }
+    };
+
+    // Listen for custom refresh event
+    window.addEventListener('refreshPermissions', handleRefreshPermissions);
+    
+    return () => {
+      window.removeEventListener('refreshPermissions', handleRefreshPermissions);
+    };
+  }, [isAuthenticated, token]);
+
   const fetchSettings = async () => {
     try {
       setLoading(true);
       
-      // Fetch user settings
+      // Fetch user page access from backend
+      const pageAccessResponse = await fetch('/api/page-access/my-access', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      let pageAccessData = null;
+      if (pageAccessResponse.ok) {
+        pageAccessData = await pageAccessResponse.json();
+        console.log('Page access data received:', pageAccessData);
+      } else {
+        console.error('Failed to fetch page access:', pageAccessResponse.status, pageAccessResponse.statusText);
+      }
+
+      // Fetch user settings (for other preferences)
       const userResponse = await fetch('/api/settings/user', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -37,26 +87,54 @@ export const SettingsProvider = ({ children }) => {
         }
       });
 
+      let userData = null;
       if (userResponse.ok) {
-        const userData = await userResponse.json();
-        setUserSettings(userData);
+        userData = await userResponse.json();
       }
 
+      // Combine all settings data
+      setUserSettings({
+        ...userData,
+        pageAccess: pageAccessData?.pageAccess || {},
+        user: pageAccessData?.user || userData?.user
+      });
+
       // Fetch app settings (for feature checks)
-      const appResponse = await fetch('/api/settings/feature/chat', {
+      const appSettingsResponse = await fetch('/api/settings/app', {
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
 
-      if (appResponse.ok) {
-        const appData = await appResponse.json();
-        // For now, we'll just check individual features as needed
-        // In a full implementation, you'd fetch all app settings here
+      if (appSettingsResponse.ok) {
+        const appSettingsData = await appSettingsResponse.json();
+        setAppSettings(appSettingsData);
+      } else {
+        // Fallback: fetch individual features
+        const [chatResponse, taskCreationResponse] = await Promise.all([
+          fetch('/api/settings/feature/chat'),
+          fetch('/api/settings/feature/taskCreation')
+        ]);
+
+        const chatData = chatResponse.ok ? await chatResponse.json() : { enabled: true };
+        const taskCreationData = taskCreationResponse.ok ? await taskCreationResponse.json() : { enabled: true };
+
+        setAppSettings({
+          features: {
+            chatEnabled: chatData.enabled,
+            taskCreationEnabled: taskCreationData.enabled
+          }
+        });
       }
 
     } catch (error) {
       console.error('Error fetching settings:', error);
+      // Set default values to prevent app crash
+      setUserSettings({
+        pageAccess: {},
+        user: user
+      });
     } finally {
       setLoading(false);
     }
@@ -122,7 +200,29 @@ export const SettingsProvider = ({ children }) => {
     checkFeatureEnabled,
     hasPageAccess,
     hasRole,
-    refreshSettings: fetchSettings
+    refreshSettings: fetchSettings,
+    refreshPageAccess: async () => {
+      try {
+        const pageAccessResponse = await fetch('/api/page-access/my-access', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (pageAccessResponse.ok) {
+          const pageAccessData = await pageAccessResponse.json();
+          setUserSettings(prev => ({
+            ...prev,
+            pageAccess: pageAccessData.pageAccess || {},
+            user: pageAccessData.user || prev?.user
+          }));
+          return pageAccessData;
+        }
+      } catch (error) {
+        console.error('Error refreshing page access:', error);
+      }
+    }
   };
 
   return (

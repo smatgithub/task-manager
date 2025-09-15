@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useSettings } from '../contexts/SettingsContext';
 import PerformanceMetrics from '../components/admin/PerformanceMetrics';
 import ScoreSection from '../components/admin/ScoreSection';
 import DailySection from '../components/admin/DailySection';
@@ -9,6 +10,7 @@ import EmployeeSidebar from '../components/admin/EmployeeSidebar';
 
 const AdminTaskReview = () => {
   const { user, loading: authLoading } = useAuth();
+  const { refreshPageAccess } = useSettings();
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [dateRange, setDateRange] = useState({
     fromDate: new Date().toISOString().split('T')[0],
@@ -31,25 +33,13 @@ const AdminTaskReview = () => {
     );
   }
 
-  // Check if user has admin or HOD role
+  // Check if user is authenticated (ProtectedRoute handles page access)
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-red-600 mb-4">Not Authenticated</h1>
           <p className="text-gray-600">Please log in to access this page.</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (user.role !== 'admin' && user.role !== 'hod') {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
-          <p className="text-gray-600">You don't have permission to access this page.</p>
-          <p className="text-sm text-gray-500 mt-2">Your role: {user.role}</p>
         </div>
       </div>
     );
@@ -158,6 +148,15 @@ const AdminTaskReview = () => {
           <div className="flex items-center justify-between mb-3">
             <h1 className="text-xl font-bold text-white">Daily Task Monitoring</h1>
             <div className="flex items-center gap-3">
+              <button 
+                onClick={() => refreshPageAccess()}
+                className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-4 py-2 rounded-lg hover:from-emerald-700 hover:to-teal-700 text-sm font-medium shadow-lg transition-all duration-200 transform hover:scale-105"
+              >
+                <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Refresh Permissions
+              </button>
               <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 text-sm font-medium shadow-lg transition-all duration-200 transform hover:scale-105">
                 <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />

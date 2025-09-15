@@ -44,7 +44,7 @@ const usePageTitle = () => {
     };
 
     const pageName = getPageName(location.pathname);
-    const title = `e.${pageName}`;
+    const title = pageName === 'Home' ? 'e-flow - Task Management System' : `${pageName} - e-flow`;
     
     document.title = title;
   }, [location.pathname]);

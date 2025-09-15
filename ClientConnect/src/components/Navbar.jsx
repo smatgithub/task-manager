@@ -55,9 +55,16 @@ const Navbar = () => {
       <nav className="w-full px-4 lg:px-8 py-2">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center">
-            <Link to="/" className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent font-bold text-xl hover:from-blue-300 hover:to-cyan-300 transition-all duration-300">
-              ClientConnect
+          <div className="flex items-center space-x-3">
+            <Link to="/" className="flex items-center space-x-3">
+              <img 
+                src="/logo.svg" 
+                alt="e-flow Logo" 
+                className="w-8 h-8 hover:scale-110 transition-transform duration-300"
+              />
+              <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent font-bold text-xl hover:from-blue-300 hover:to-cyan-300 transition-all duration-300">
+                e-flow
+              </span>
             </Link>
           </div>
 

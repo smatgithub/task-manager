@@ -1,0 +1,25 @@
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="8" cy="8" r="7" fill="url(#gradient1)" stroke="url(#gradient2)" stroke-width="1"/>
+  
+  <!-- Flow lines representing workflow -->
+  <path d="M4 6 Q8 4 12 6" stroke="white" stroke-width="1" fill="none" opacity="0.8"/>
+  <path d="M4 10 Q8 8 12 10" stroke="white" stroke-width="1" fill="none" opacity="0.6"/>
+  <path d="M4 8 Q8 10 12 8" stroke="white" stroke-width="1" fill="none" opacity="0.4"/>
+  
+  <!-- Central 'e' letter -->
+  <text x="8" y="11" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="white">e</text>
+  
+  <!-- Gradient definitions -->
+  <defs>
+    <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#06B6D4;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#60A5FA;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#22D3EE;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+</svg>
+

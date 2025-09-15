@@ -24,7 +24,7 @@ const Login = () => {
       
       <div className="bg-gradient-to-r from-slate-800/50 to-slate-700/50 backdrop-blur-sm rounded-3xl shadow-2xl p-10 w-full max-w-md border border-blue-500/30 relative z-10">
         <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-500 bg-clip-text text-transparent mb-8">
-          Welcome to ClientConnect
+          Welcome to e-flow
         </h2>
 
         <div className="flex flex-col space-y-6">

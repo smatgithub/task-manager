@@ -55,9 +55,30 @@ const ProtectedRoute = ({
   }
 
   // Check page access control
-  if (requiredPage && userSettings) {
+  if (requiredPage) {
+    // If userSettings is not loaded yet, show loading
+    if (!userSettings) {
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading permissions...</p>
+          </div>
+        </div>
+      );
+    }
+
     const hasPageAccess = userSettings.pageAccess?.[requiredPage];
-    if (!hasPageAccess) {
+    console.log('ProtectedRoute - Page access check:', {
+      requiredPage,
+      userSettings,
+      pageAccess: userSettings.pageAccess,
+      hasPageAccess,
+      userRole: user?.role
+    });
+    
+    // Admin users always have access (fallback)
+    if (!hasPageAccess && user?.role !== 'admin') {
       return fallback || (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="text-center">
@@ -66,6 +87,13 @@ const ProtectedRoute = ({
             <p className="text-sm text-gray-500 mt-2">
               Contact your administrator if you need access to this feature.
             </p>
+            <div className="mt-4 p-4 bg-gray-100 rounded text-left text-xs">
+              <p><strong>Debug Info:</strong></p>
+              <p>Required Page: {requiredPage}</p>
+              <p>User Role: {user?.role}</p>
+              <p>Page Access: {JSON.stringify(userSettings.pageAccess)}</p>
+              <p>Has Access: {hasPageAccess ? 'Yes' : 'No'}</p>
+            </div>
           </div>
         </div>
       );

@@ -47,6 +47,9 @@ const UserPageAccess = require('./models/UserPageAccess');
 const AppSettings = require('./models/AppSettings');
 const UserSettings = require('./models/UserSettings');
 
+// Controllers
+const { initializePageMaster } = require('./controllers/pageAccessController');
+
 const app = express();
 // When running behind a proxy/load balancer (Render/Cloudflare),
 // trust the first hop so req.ip and rate-limits work correctly
@@ -112,7 +115,11 @@ app.use(passport.initialize());
 ========================= */
 
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ Connected to MongoDB'))
+  .then(async () => {
+    console.log('✅ Connected to MongoDB');
+    // Initialize page master with default pages
+    await initializePageMaster();
+  })
   .catch(err => {
     console.error('❌ MongoDB connection error:', err.message);
     process.exit(1);

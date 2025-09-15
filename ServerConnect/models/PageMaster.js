@@ -39,6 +39,10 @@ const pageMasterSchema = new mongoose.Schema({
   sortOrder: {
     type: Number,
     default: 0
+  },
+  groupName: {
+    type: String,
+    required: true
   }
 }, {
   timestamps: true

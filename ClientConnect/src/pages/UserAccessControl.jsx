@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useSettings } from '../contexts/SettingsContext';
 
 const UserAccessControl = () => {
   const { user, token } = useAuth();
+  const { refreshPageAccess } = useSettings();
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [userPages, setUserPages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [showRoleModal, setShowRoleModal] = useState(false);
+  const [selectedRole, setSelectedRole] = useState('');
 
   useEffect(() => {
     if (user?.role === 'admin') {
@@ -93,11 +97,24 @@ const UserAccessControl = () => {
               : page
           )
         );
+        
+        // Refresh users list to update access counts
+        await fetchUsers();
+        
         setMessage('Page access updated successfully!');
         setTimeout(() => setMessage(''), 3000);
+        
+        // Trigger global refresh for all users
+        window.dispatchEvent(new CustomEvent('refreshPermissions'));
       } else {
-        setMessage('Failed to update page access');
-        setTimeout(() => setMessage(''), 3000);
+        const errorData = await response.json();
+        if (errorData.details) {
+          // Role validation error
+          setMessage(`Cannot grant access: ${errorData.details.suggestion}`);
+        } else {
+          setMessage(`Failed to update page access: ${errorData.error || 'Unknown error'}`);
+        }
+        setTimeout(() => setMessage(''), 5000);
       }
     } catch (error) {
       console.error('Error updating page access:', error);
@@ -125,11 +142,21 @@ const UserAccessControl = () => {
       if (response.ok) {
         setMessage('Bulk access update completed successfully!');
         setTimeout(() => setMessage(''), 3000);
-        // Refresh user access
-        fetchUserAccess(selectedUser._id);
+        // Refresh user access and users list
+        await fetchUserAccess(selectedUser._id);
+        await fetchUsers();
       } else {
-        setMessage('Failed to update page access');
-        setTimeout(() => setMessage(''), 3000);
+        const errorData = await response.json();
+        if (errorData.validationErrors && errorData.validationErrors.length > 0) {
+          // Show validation errors for pages that couldn't be updated
+          const errorMessages = errorData.validationErrors.map(err => 
+            `${err.pageName}: ${err.suggestion}`
+          ).join('; ');
+          setMessage(`Some pages couldn't be updated: ${errorMessages}`);
+        } else {
+          setMessage(`Failed to update page access: ${errorData.error || 'Unknown error'}`);
+        }
+        setTimeout(() => setMessage(''), 5000);
       }
     } catch (error) {
       console.error('Error bulk updating page access:', error);
@@ -154,6 +181,59 @@ const UserAccessControl = () => {
       hasAccess: action === 'enable' ? true : action === 'disable' ? false : page.hasAccess
     }));
     bulkUpdateAccess(accesses);
+  };
+
+  const updateUserRole = async (newRole) => {
+    setSaving(true);
+    try {
+      const response = await fetch(`/api/page-access/user/${selectedUser._id}/role`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          newRole
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setMessage(`User role updated from ${data.user.oldRole.toUpperCase()} to ${data.user.newRole.toUpperCase()} successfully!`);
+        setTimeout(() => setMessage(''), 5000);
+        
+        // Refresh user data and users list
+        await fetchUserAccess(selectedUser._id);
+        await fetchUsers();
+        
+        // Close modal
+        setShowRoleModal(false);
+        setSelectedRole('');
+        
+        // Trigger global refresh for all users
+        window.dispatchEvent(new CustomEvent('refreshPermissions'));
+      } else {
+        const errorData = await response.json();
+        setMessage(`Failed to update role: ${errorData.error || 'Unknown error'}`);
+        setTimeout(() => setMessage(''), 5000);
+      }
+    } catch (error) {
+      console.error('Error updating user role:', error);
+      setMessage('Error updating user role');
+      setTimeout(() => setMessage(''), 3000);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleRoleChange = (role) => {
+    setSelectedRole(role);
+  };
+
+  const handleRoleUpdate = () => {
+    if (selectedRole && selectedRole !== selectedUser.role) {
+      updateUserRole(selectedRole);
+    }
   };
 
   if (user?.role !== 'admin') {
@@ -245,6 +325,26 @@ const UserAccessControl = () => {
                           Page Access for {selectedUser.name}
                         </h2>
                         <p className="text-sm text-gray-500">{selectedUser.email}</p>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <span className={`text-xs px-2 py-1 rounded ${
+                            selectedUser.role === 'admin' 
+                              ? 'bg-red-100 text-red-800'
+                              : selectedUser.role === 'hod'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-green-100 text-green-800'
+                          }`}>
+                            {selectedUser.role.toUpperCase()}
+                          </span>
+                          <button
+                            onClick={() => {
+                              setSelectedRole(selectedUser.role);
+                              setShowRoleModal(true);
+                            }}
+                            className="text-xs text-blue-600 hover:text-blue-800 underline"
+                          >
+                            Change Role
+                          </button>
+                        </div>
                       </div>
                       <div className="flex space-x-2">
                         <button
@@ -264,53 +364,107 @@ const UserAccessControl = () => {
                       </div>
                     </div>
 
-                    <div className="space-y-3 max-h-96 overflow-y-auto">
-                      {userPages.map((page) => (
-                        <div
-                          key={page.pageId}
-                          className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
-                        >
-                          <div className="flex-1">
-                            <h3 className="text-sm font-medium text-gray-900">
-                              {page.pageName}
-                            </h3>
-                            <p className="text-xs text-gray-500">{page.pageDescription}</p>
-                            <div className="flex items-center space-x-4 mt-1">
-                              <span className={`text-xs px-2 py-1 rounded ${
-                                page.requiredRole === 'admin' 
-                                  ? 'bg-red-100 text-red-800'
-                                  : page.requiredRole === 'hod'
-                                  ? 'bg-yellow-100 text-yellow-800'
-                                  : 'bg-green-100 text-green-800'
-                              }`}>
-                                {page.requiredRole.toUpperCase()}
-                              </span>
-                              <span className="text-xs text-gray-500">
-                                {page.category.replace('-', ' ').toUpperCase()}
-                              </span>
+                    <div className="space-y-6 max-h-96 overflow-y-auto">
+                      {(() => {
+                        // Group pages by groupName
+                        const groupedPages = userPages.reduce((groups, page) => {
+                          const group = page.groupName || 'Other';
+                          if (!groups[group]) {
+                            groups[group] = [];
+                          }
+                          groups[group].push(page);
+                          return groups;
+                        }, {});
+
+                        return Object.entries(groupedPages).map(([groupName, pages]) => (
+                          <div key={groupName} className="space-y-3">
+                            <div className="border-b border-gray-200 pb-2">
+                              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                                {groupName}
+                              </h3>
+                            </div>
+                            <div className="space-y-2">
+                              {pages.map((page) => (
+                                <div
+                                  key={page.pageId}
+                                  className="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-gray-50"
+                                >
+                                  <div className="flex-1">
+                                    <h4 className="text-sm font-medium text-gray-900">
+                                      {page.pageName}
+                                    </h4>
+                                    <p className="text-xs text-gray-500">{page.pageDescription}</p>
+                                    <div className="flex items-center space-x-3 mt-1">
+                                      <span className={`text-xs px-2 py-1 rounded ${
+                                        page.requiredRole === 'admin' 
+                                          ? 'bg-red-100 text-red-800'
+                                          : page.requiredRole === 'hod'
+                                          ? 'bg-yellow-100 text-yellow-800'
+                                          : 'bg-green-100 text-green-800'
+                                      }`}>
+                                        {page.requiredRole.toUpperCase()}
+                                      </span>
+                                      <span className="text-xs text-gray-500">
+                                        {page.category.replace('-', ' ').toUpperCase()}
+                                      </span>
+                                      {page.isSystemPage && (
+                                        <span className="text-xs text-blue-600 font-medium">
+                                          SYSTEM PAGE
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="ml-4">
+                                    {(() => {
+                                      const isRoleIncompatible = page.requiredRole !== 'any' && 
+                                        selectedUser.role !== page.requiredRole;
+                                      const isDisabled = saving || 
+                                        (page.isSystemPage && user?.role !== 'admin') ||
+                                        isRoleIncompatible;
+                                      
+                                      return (
+                                        <div className="text-center">
+                                          <label className={`relative inline-flex items-center ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+                                            <input
+                                              type="checkbox"
+                                              checked={page.hasAccess}
+                                              onChange={(e) => handlePageAccessChange(page.pageId, e.target.checked)}
+                                              className="sr-only peer"
+                                              disabled={isDisabled}
+                                            />
+                                            <div className={`w-11 h-6 rounded-full peer ${
+                                              isDisabled
+                                                ? 'bg-gray-300 cursor-not-allowed'
+                                                : 'bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300'
+                                            } peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600`}></div>
+                                          </label>
+                                          
+                                          {isRoleIncompatible && (
+                                            <div className="mt-1">
+                                              <p className="text-xs text-red-600 font-medium">
+                                                Requires {page.requiredRole.toUpperCase()} role
+                                              </p>
+                                              <p className="text-xs text-gray-500">
+                                                User has {selectedUser.role.toUpperCase()} role
+                                              </p>
+                                            </div>
+                                          )}
+                                          
+                                          {page.isSystemPage && !isRoleIncompatible && (
+                                            <p className="text-xs text-gray-400 mt-1">
+                                              {user?.role === 'admin' ? 'Admin can manage' : 'System managed'}
+                                            </p>
+                                          )}
+                                        </div>
+                                      );
+                                    })()}
+                                  </div>
+                                </div>
+                              ))}
                             </div>
                           </div>
-                          <div className="ml-4">
-                            <label className="relative inline-flex items-center cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={page.hasAccess}
-                                onChange={(e) => handlePageAccessChange(page.pageId, e.target.checked)}
-                                className="sr-only peer"
-                                disabled={saving || page.isSystemPage}
-                              />
-                              <div className={`w-11 h-6 rounded-full peer ${
-                                page.isSystemPage 
-                                  ? 'bg-gray-300 cursor-not-allowed'
-                                  : 'bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300'
-                              } peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600`}></div>
-                            </label>
-                            {page.isSystemPage && (
-                              <p className="text-xs text-gray-400 mt-1">System Page</p>
-                            )}
-                          </div>
-                        </div>
-                      ))}
+                        ));
+                      })()}
                     </div>
                   </div>
                 ) : (
@@ -327,6 +481,107 @@ const UserAccessControl = () => {
           </div>
         </div>
       </div>
+
+      {/* Role Selection Modal */}
+      {showRoleModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Change User Role
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowRoleModal(false);
+                    setSelectedRole('');
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 mb-2">
+                  Current user: <span className="font-medium">{selectedUser?.name}</span>
+                </p>
+                <p className="text-sm text-gray-600">
+                  Current role: <span className="font-medium">{selectedUser?.role?.toUpperCase()}</span>
+                </p>
+              </div>
+
+              <div className="space-y-3 mb-6">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="user"
+                    checked={selectedRole === 'user'}
+                    onChange={(e) => handleRoleChange(e.target.value)}
+                    className="mr-3"
+                  />
+                  <div className="flex items-center">
+                    <span className="text-sm font-medium text-gray-700 mr-2">USER</span>
+                    <span className="text-xs text-gray-500">Basic user access</span>
+                  </div>
+                </label>
+                
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="hod"
+                    checked={selectedRole === 'hod'}
+                    onChange={(e) => handleRoleChange(e.target.value)}
+                    className="mr-3"
+                  />
+                  <div className="flex items-center">
+                    <span className="text-sm font-medium text-gray-700 mr-2">HOD</span>
+                    <span className="text-xs text-gray-500">Head of Department access</span>
+                  </div>
+                </label>
+                
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="admin"
+                    checked={selectedRole === 'admin'}
+                    onChange={(e) => handleRoleChange(e.target.value)}
+                    className="mr-3"
+                  />
+                  <div className="flex items-center">
+                    <span className="text-sm font-medium text-gray-700 mr-2">ADMIN</span>
+                    <span className="text-xs text-gray-500">Full administrative access</span>
+                  </div>
+                </label>
+              </div>
+
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => {
+                    setShowRoleModal(false);
+                    setSelectedRole('');
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleRoleUpdate}
+                  disabled={saving || !selectedRole || selectedRole === selectedUser?.role}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {saving ? 'Updating...' : 'Update Role'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

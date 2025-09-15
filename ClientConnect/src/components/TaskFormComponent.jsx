@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { addTaskToMaster } from '../services/taskService';
 import AssignToAutocomplete from './AssignToAutocomplete';
+import FileUpload from './chat/FileUpload';
 
 function DailyFields({ inputBase, labelBase, dailyTask, setDailyTask, dailyAssignee, setDailyAssignee, errors }) {
   return (
@@ -139,7 +140,7 @@ function OtdFields({ inputBase, labelBase, otdTask, setOtdTask, otdAssignee, set
   );
 }
 
-function DelegationFields({ inputBase, labelBase, delegationTask, setDelegationTask, delegatedBy, setDelegatedBy, delegatedTo, setDelegatedTo, errors }) {
+function DelegationFields({ inputBase, labelBase, delegationTask, setDelegationTask, delegatedBy, setDelegatedBy, delegatedTo, setDelegatedTo, errors, showFileUpload, setShowFileUpload }) {
   return (
     <>
       <div>
@@ -228,16 +229,41 @@ function DelegationFields({ inputBase, labelBase, delegationTask, setDelegationT
 
       <div>
         <label className={labelBase}>Reference Document</label>
-        <input
-          type="file"
-          className={
-            inputBase +
-            ' file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100'
-          }
-          onChange={(e) =>
-            setDelegationTask({ ...delegationTask, refDoc: e.target.files?.[0]?.name || '' })
-          }
-        />
+        <div className="space-y-3">
+          {delegationTask.refDoc && (
+            <div className="flex items-center justify-between p-3 bg-slate-600/50 rounded-lg border border-slate-500">
+              <div className="flex items-center space-x-3">
+                <svg className="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span className="text-slate-200 text-sm">{delegationTask.refDoc}</span>
+              </div>
+              <button
+                onClick={() => setDelegationTask({ ...delegationTask, refDoc: '' })}
+                className="text-slate-400 hover:text-slate-200 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={() => setShowFileUpload(true)}
+            className={`${inputBase} cursor-pointer hover:bg-slate-600/70 transition-colors flex items-center justify-center space-x-2`}
+          >
+            <svg className="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            <span className="text-slate-300">
+              {delegationTask.refDoc ? 'Change Document' : 'Attach Document'}
+            </span>
+          </button>
+          <p className="text-xs text-slate-400">
+            📁 Drag & drop files or 📸 take screenshots of windows
+          </p>
+        </div>
       </div>
     </>
   );
@@ -287,7 +313,16 @@ export default function TaskFormComponent() {
   const [delegatedBy, setDelegatedBy] = useState(null);
   const [delegatedTo, setDelegatedTo] = useState(null);
 
+  // File upload state
+  const [showFileUpload, setShowFileUpload] = useState(false);
+
   const [submitting, setSubmitting] = useState(false);
+
+  // Handle file selection from FileUpload component
+  const handleFileSelect = (file) => {
+    setDelegationTask({ ...delegationTask, refDoc: file.name });
+    setShowFileUpload(false);
+  };
 
   // Lightweight client-side validation to avoid round-trips
   const validateClient = () => {
@@ -489,6 +524,8 @@ export default function TaskFormComponent() {
                 delegatedTo={delegatedTo}
                 setDelegatedTo={setDelegatedTo}
                 errors={errors}
+                showFileUpload={showFileUpload}
+                setShowFileUpload={setShowFileUpload}
               />
             )}
 
@@ -530,6 +567,13 @@ export default function TaskFormComponent() {
           </div>
         )}
       </div>
+      
+      {/* Enhanced File Upload Modal */}
+      <FileUpload
+        isOpen={showFileUpload}
+        onClose={() => setShowFileUpload(false)}
+        onFileSelect={handleFileSelect}
+      />
     </div>
   );
 }
