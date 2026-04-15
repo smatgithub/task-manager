@@ -25,8 +25,8 @@ const Navbar = () => {
     setActiveDropdown(activeDropdown === dropdown ? null : dropdown);
   };
 
-  const handleChatToggle = (chatType) => {
-    const chatWindow = document.getElementById(chatType === 'enhanced' ? 'enhanced-chat-window' : 'chat-window');
+  const handleChatToggle = () => {
+    const chatWindow = document.getElementById('enhanced-chat-window');
     if (chatWindow) {
       const isHidden = chatWindow.classList.contains('hidden');
       
@@ -35,8 +35,8 @@ const Navbar = () => {
         setTimeout(() => {
           const windowWidth = window.innerWidth;
           const windowHeight = window.innerHeight;
-          const chatWidth = chatType === 'enhanced' ? 800 : 384;
-          const chatHeight = chatType === 'enhanced' ? 700 : 600;
+          const chatWidth = 800;
+          const chatHeight = 700;
           
           const centerX = Math.max(0, (windowWidth - chatWidth) / 2);
           const centerY = Math.max(0, (windowHeight - chatHeight) / 2);
@@ -157,21 +157,7 @@ const Navbar = () => {
                 <div className="absolute top-full left-0 mt-2 w-56 bg-slate-800/95 backdrop-blur-sm rounded-xl shadow-2xl border border-blue-500/30 py-2 z-50">
                   <button
                     onClick={() => {
-                      handleChatToggle('basic');
-                      setActiveDropdown(null);
-                    }}
-                    className="w-full text-left px-4 py-3 text-slate-300 hover:bg-slate-700/50 hover:text-blue-400 transition-colors duration-200"
-                  >
-                    <div className="flex items-center gap-3">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                      </svg>
-                      Basic Chat
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleChatToggle('enhanced');
+                      handleChatToggle();
                       setActiveDropdown(null);
                     }}
                     className="w-full text-left px-4 py-3 text-slate-300 hover:bg-slate-700/50 hover:text-blue-400 transition-colors duration-200"
@@ -180,7 +166,7 @@ const Navbar = () => {
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
-                      Enhanced Chat
+                      Chat
                     </div>
                   </button>
                 </div>
@@ -356,21 +342,12 @@ const Navbar = () => {
                   </div>
                   <button
                     onClick={() => {
-                      handleChatToggle('basic');
+                      handleChatToggle();
                       setActiveDropdown(null);
                     }}
                     className="w-full text-left px-4 py-3 text-slate-300 hover:bg-slate-700/50 hover:text-blue-400 transition-colors duration-200"
                   >
-                    Basic Chat
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleChatToggle('enhanced');
-                      setActiveDropdown(null);
-                    }}
-                    className="w-full text-left px-4 py-3 text-slate-300 hover:bg-slate-700/50 hover:text-blue-400 transition-colors duration-200"
-                  >
-                    Enhanced Chat
+                    Chat
                   </button>
                   <div className="px-4 py-2">
                     <p className="text-xs text-gray-400 uppercase tracking-wider font-medium">Account</p>

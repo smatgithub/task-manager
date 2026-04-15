@@ -3,7 +3,6 @@ import { AuthProvider } from './contexts/AuthContext';
 import { SettingsProvider } from './contexts/SettingsContext';
 import usePageTitle from './hooks/usePageTitle';
 import Navbar from './components/Navbar';
-import ChatWindow from './components/ChatWindow';
 import EnhancedChatWindow from './components/chat/EnhancedChatWindow';
 import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home'
@@ -39,7 +38,6 @@ function AppContent() {
   return (
     <>
       <Navbar />
-      <ChatWindow />
       <EnhancedChatWindow />
       <div className="pt-16">
         <Routes>

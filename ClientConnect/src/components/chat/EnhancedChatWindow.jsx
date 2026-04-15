@@ -59,6 +59,25 @@ const EnhancedChatWindow = () => {
   const resizeStartRef = useRef({ x: 0, y: 0, width: 0, height: 0 });
   const fileInputRef = useRef(null);
   const voiceRecorderRef = useRef(null);
+  const selectedUserRef = useRef(null);
+  const currentUserIdRef = useRef(null);
+
+  useEffect(() => {
+    selectedUserRef.current = selectedUser;
+  }, [selectedUser]);
+
+  useEffect(() => {
+    currentUserIdRef.current = user?._id ? String(user._id) : null;
+  }, [user?._id]);
+
+  const getSocketUrl = () => {
+    // In production, client + API are served from the same origin on Render.
+    // In dev, default to local API server.
+    const fromEnv = import.meta?.env?.VITE_SOCKET_URL || import.meta?.env?.VITE_API_BASE_URL || '';
+    if (fromEnv) return fromEnv.replace(/\/$/, '');
+    if (typeof window !== 'undefined' && window.location?.origin) return window.location.origin;
+    return 'http://localhost:3000';
+  };
 
   // Themes - using static classes to avoid Tailwind purging issues
   const getThemeClasses = (theme) => {
@@ -95,11 +114,15 @@ const EnhancedChatWindow = () => {
   // Initialize socket connection
   useEffect(() => {
     if (user && token) {
-      const newSocket = io('http://localhost:3000', {
+      const socketUrl = getSocketUrl();
+      const newSocket = io(socketUrl, {
         auth: { token: token },
         transports: ['websocket', 'polling'],
         timeout: 20000,
-        forceNew: true
+        forceNew: true,
+        reconnection: true,
+        reconnectionAttempts: 8,
+        reconnectionDelayMax: 4000
       });
 
       newSocket.on('connect', () => {
@@ -115,6 +138,11 @@ const EnhancedChatWindow = () => {
         }
       });
 
+      newSocket.on('connect_error', (err) => {
+        setIsOnline(false);
+        setConnectionError(err?.message || 'Chat connection failed');
+      });
+
       newSocket.on('receive_message', (message) => {
         console.log('=== RECEIVE_MESSAGE EVENT ===');
         console.log('Received message:', message);
@@ -126,8 +154,8 @@ const EnhancedChatWindow = () => {
         console.log('Current user ID:', user?._id);
         console.log('User ID type:', typeof user?._id);
         
-        // Early return if user is not available
-        if (!user || !user._id) {
+        const currentUserId = currentUserIdRef.current;
+        if (!currentUserId) {
           console.log('User not available, skipping message');
           return;
         }
@@ -136,7 +164,6 @@ const EnhancedChatWindow = () => {
           // Check if this message involves the current user
           const senderId = message.sender?._id || message.sender;
           const receiverId = message.receiver?._id || message.receiver;
-          const currentUserId = user._id;
           
           console.log('Sender ID:', senderId, 'Type:', typeof senderId);
           console.log('Receiver ID:', receiverId, 'Type:', typeof receiverId);
@@ -172,12 +199,13 @@ const EnhancedChatWindow = () => {
           return prev;
         });
         
-        if (selectedUser && message.sender._id === selectedUser._id) {
-          markMessagesAsRead(selectedUser._id);
+        const selected = selectedUserRef.current;
+        if (selected && message.sender?._id && String(message.sender._id) === String(selected._id)) {
+          markMessagesAsRead(selected._id);
         }
 
         // Browser notification
-        if (notifications && message.sender._id !== user._id) {
+        if (notifications && message.sender?._id && String(message.sender._id) !== String(currentUserId)) {
           new Notification('New Message', {
             body: `${message.sender.name}: ${message.message}`,
             icon: '/favicon.ico'
@@ -775,7 +803,7 @@ const EnhancedChatWindow = () => {
     <div 
       id="enhanced-chat-window" 
       ref={chatWindowRef}
-      className={`fixed shadow-2xl rounded-lg border border-gray-200 hidden z-40 select-none ${themeClasses.bg}`}
+      className={`fixed hidden z-40 select-none shadow-2xl border border-black/10 rounded-2xl overflow-hidden backdrop-blur-sm ${themeClasses.bg}`}
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
@@ -792,22 +820,22 @@ const EnhancedChatWindow = () => {
       <div className="flex flex-col h-full">
         {/* Header - Draggable */}
         <div 
-          className={`${themeClasses.header} text-white ${isCollapsed ? 'p-2' : 'p-4'} ${isMaximized ? 'rounded-none' : 'rounded-t-lg'} flex items-center justify-between ${isCollapsed ? 'cursor-pointer' : 'cursor-move'}`}
+          className={`${themeClasses.header} text-white ${isCollapsed ? 'px-3 py-2' : 'px-4 py-3'} ${isMaximized ? 'rounded-none' : ''} flex items-center justify-between ${isCollapsed ? 'cursor-pointer' : 'cursor-move'}`}
           onMouseDown={isCollapsed ? undefined : handleMouseDown}
           onDoubleClick={isCollapsed ? toggleCollapse : toggleMaximize}
           onClick={isCollapsed ? toggleCollapse : undefined}
         >
           <div className="flex items-center gap-2">
-            <div className={`w-3 h-3 rounded-full ${isOnline ? 'bg-green-400' : 'bg-red-400'}`}></div>
-            <h3 className="font-semibold">Enhanced Chat</h3>
+            <div className={`w-2.5 h-2.5 rounded-full ring-2 ring-white/20 ${isOnline ? 'bg-emerald-300' : 'bg-rose-300'}`}></div>
+            <h3 className="font-semibold tracking-tight">Chat</h3>
             {isCollapsed && (
               <span className="text-xs text-indigo-200 ml-2">(Collapsed)</span>
             )}
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <button 
               onClick={() => setShowSearch(true)}
-              className="text-white hover:text-gray-200 hover:bg-indigo-700 rounded p-1 transition-colors"
+              className="text-white/90 hover:text-white hover:bg-white/15 rounded-lg p-1.5 transition-colors"
               title="Search Messages"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -816,7 +844,7 @@ const EnhancedChatWindow = () => {
             </button>
             <button 
               onClick={() => setChatTheme(chatTheme === 'default' ? 'dark' : chatTheme === 'dark' ? 'blue' : 'default')}
-              className="text-white hover:text-gray-200 hover:bg-indigo-700 rounded p-1 transition-colors"
+              className="text-white/90 hover:text-white hover:bg-white/15 rounded-lg p-1.5 transition-colors"
               title="Change Theme"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -825,7 +853,7 @@ const EnhancedChatWindow = () => {
             </button>
             <button 
               onClick={exportChat}
-              className="text-white hover:text-gray-200 hover:bg-indigo-700 rounded p-1 transition-colors"
+              className="text-white/90 hover:text-white hover:bg-white/15 rounded-lg p-1.5 transition-colors"
               title="Export Chat"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -834,7 +862,7 @@ const EnhancedChatWindow = () => {
             </button>
             <button 
               onClick={toggleCollapse}
-              className="text-white hover:text-gray-200 hover:bg-indigo-700 rounded p-1 transition-colors z-10"
+              className="text-white/90 hover:text-white hover:bg-white/15 rounded-lg p-1.5 transition-colors z-10"
               title={isCollapsed ? "Expand" : "Collapse"}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -847,7 +875,7 @@ const EnhancedChatWindow = () => {
             </button>
             <button 
               onClick={toggleMaximize}
-              className="text-white hover:text-gray-200 hover:bg-indigo-700 rounded p-1 transition-colors z-10"
+              className="text-white/90 hover:text-white hover:bg-white/15 rounded-lg p-1.5 transition-colors z-10"
               title={isMaximized ? "Restore" : "Maximize"}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -860,7 +888,7 @@ const EnhancedChatWindow = () => {
             </button>
             <button 
               onClick={() => document.getElementById('enhanced-chat-window').classList.add('hidden')}
-              className="text-white hover:text-gray-200 hover:bg-red-600 rounded p-1 transition-colors"
+              className="text-white/90 hover:text-white hover:bg-rose-500/60 rounded-lg p-1.5 transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -872,25 +900,25 @@ const EnhancedChatWindow = () => {
         {!isCollapsed && (
           <div className="flex flex-1 overflow-hidden">
             {/* Sidebar */}
-            <div className="w-1/3 border-r border-gray-200 flex flex-col">
-              <div className="p-3 border-b border-gray-200">
-                <h4 className="font-medium text-sm text-gray-600">Conversations</h4>
+            <div className="w-80 border-r border-black/5 flex flex-col bg-white/50">
+              <div className="px-4 py-3 border-b border-black/5">
+                <h4 className="font-semibold text-sm text-gray-800 tracking-tight">Conversations</h4>
               </div>
               <div className="flex-1 overflow-y-auto">
                 {isLoading ? (
-                  <div className="p-3 text-center text-gray-500">
+                  <div className="p-4 text-center text-gray-500">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600 mx-auto"></div>
-                    <p className="text-sm mt-2">Loading conversations...</p>
+                    <p className="text-sm mt-2">Loading…</p>
                   </div>
                 ) : error ? (
-                  <div className="p-3 text-center text-red-500">
+                  <div className="p-4 text-center text-red-600">
                     <p className="text-sm">{error}</p>
                     <button 
                       onClick={() => {
                         setError(null);
                         fetchConversations();
                       }}
-                      className="mt-2 px-3 py-1 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200 transition-colors"
+                      className="mt-3 px-3 py-1.5 bg-red-50 text-red-700 rounded-lg text-xs hover:bg-red-100 transition-colors"
                     >
                       Retry
                     </button>
@@ -904,36 +932,36 @@ const EnhancedChatWindow = () => {
                           setSelectedUser(conv.user);
                           setSelectedGroup(null);
                         }}
-                        className={`p-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
-                          selectedUser?._id === conv.user._id ? 'bg-indigo-50 border-l-4 border-indigo-500' : ''
+                        className={`px-4 py-3 border-b border-black/5 cursor-pointer hover:bg-white/70 transition-colors ${
+                          selectedUser?._id === conv.user._id ? 'bg-white border-l-4 border-indigo-500' : ''
                         }`}
                       >
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                          <div className="w-9 h-9 bg-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-semibold shadow-sm">
                             {conv.user.name.charAt(0).toUpperCase()}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1">
-                              <p className="text-sm font-medium truncate">{conv.user.name}</p>
+                              <p className="text-sm font-semibold text-gray-900 truncate">{conv.user.name}</p>
                               {conv.isOnline && (
                                 <div className="w-2 h-2 bg-green-400 rounded-full"></div>
                               )}
                             </div>
-                            <p className="text-xs text-gray-500 truncate">
+                            <p className="text-xs text-gray-600 truncate">
                               {conv.lastMessage?.message || 'No messages yet'}
                             </p>
                           </div>
                           {conv.unreadCount > 0 && (
-                            <div className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                            <div className="bg-rose-500 text-white text-[11px] rounded-full min-w-5 h-5 px-1.5 flex items-center justify-center font-semibold">
                               {conv.unreadCount}
                             </div>
                           )}
                         </div>
                       </div>
                     )) : (
-                      <div className="p-3 text-center text-gray-500">
-                        <p className="text-sm">No conversations yet</p>
-                        <p className="text-xs mt-1">Start a chat with someone!</p>
+                      <div className="p-6 text-center text-gray-600">
+                        <p className="text-sm font-medium text-gray-800">No conversations yet</p>
+                        <p className="text-xs mt-1 text-gray-600">Start a chat from the list below.</p>
                       </div>
                     )}
                     
@@ -944,26 +972,26 @@ const EnhancedChatWindow = () => {
                           setSelectedGroup(group);
                           setSelectedUser(null);
                         }}
-                        className={`p-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
-                          selectedGroup?._id === group._id ? 'bg-indigo-50 border-l-4 border-indigo-500' : ''
+                        className={`px-4 py-3 border-b border-black/5 cursor-pointer hover:bg-white/70 transition-colors ${
+                          selectedGroup?._id === group._id ? 'bg-white border-l-4 border-indigo-500' : ''
                         }`}
                       >
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                          <div className="w-9 h-9 bg-purple-600 rounded-full flex items-center justify-center text-white text-sm font-semibold shadow-sm">
                             {group.name.charAt(0).toUpperCase()}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">{group.name}</p>
-                            <p className="text-xs text-gray-500 truncate">
+                            <p className="text-sm font-semibold text-gray-900 truncate">{group.name}</p>
+                            <p className="text-xs text-gray-600 truncate">
                               {group.members.length} members
                             </p>
                           </div>
                         </div>
                       </div>
                     )) : (
-                      <div className="p-3 text-center text-gray-500">
-                        <p className="text-sm">No groups yet</p>
-                        <p className="text-xs mt-1">Create or join a group!</p>
+                      <div className="p-6 text-center text-gray-600">
+                        <p className="text-sm font-medium text-gray-800">No groups yet</p>
+                        <p className="text-xs mt-1 text-gray-600">Create or join a group to chat together.</p>
                       </div>
                     )}
                   </>
@@ -971,8 +999,8 @@ const EnhancedChatWindow = () => {
               </div>
 
               {/* New Chat Button */}
-              <div className="p-3 border-t border-gray-200">
-                <h4 className="font-medium text-sm text-gray-600 mb-2">Start New Chat</h4>
+              <div className="px-4 py-3 border-t border-black/5 bg-white/60">
+                <h4 className="font-semibold text-sm text-gray-800 mb-2 tracking-tight">Start new chat</h4>
                 <div className="max-h-32 overflow-y-auto">
                   {users && users.length > 0 ? users.map((user) => (
                     <div
@@ -981,17 +1009,17 @@ const EnhancedChatWindow = () => {
                         setSelectedUser(user);
                         setSelectedGroup(null);
                       }}
-                      className="p-2 hover:bg-gray-50 cursor-pointer rounded text-sm transition-colors"
+                      className="px-2.5 py-2 hover:bg-white/70 cursor-pointer rounded-lg text-sm transition-colors"
                     >
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-indigo-500 rounded-full flex items-center justify-center text-white text-xs font-medium">
+                        <div className="w-7 h-7 bg-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-semibold shadow-sm">
                           {user.name.charAt(0).toUpperCase()}
                         </div>
-                        <span className="truncate text-gray-800">{user.name}</span>
+                        <span className="truncate text-gray-900 font-medium">{user.name}</span>
                       </div>
                     </div>
                   )) : (
-                    <div className="p-3 text-center text-gray-500">
+                    <div className="p-3 text-center text-gray-600">
                       <p className="text-sm">No users available</p>
                     </div>
                   )}
@@ -1004,14 +1032,14 @@ const EnhancedChatWindow = () => {
               {(selectedUser || selectedGroup) ? (
                 <>
                   {/* Chat Header */}
-                  <div className="p-3 border-b border-gray-200 bg-gray-50">
+                  <div className="px-5 py-3 border-b border-black/5 bg-white/70">
                     <div className="flex items-center gap-2">
-                      <div className={`w-8 h-8 ${selectedUser ? 'bg-indigo-500' : 'bg-purple-500'} rounded-full flex items-center justify-center text-white text-sm font-medium`}>
+                      <div className={`w-9 h-9 ${selectedUser ? 'bg-indigo-600' : 'bg-purple-600'} rounded-full flex items-center justify-center text-white text-sm font-semibold shadow-sm`}>
                         {(selectedUser?.name || selectedGroup?.name).charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <p className="font-medium text-sm">{selectedUser?.name || selectedGroup?.name}</p>
-                        <p className="text-xs text-gray-500">
+                        <p className="font-semibold text-sm text-gray-900 tracking-tight">{selectedUser?.name || selectedGroup?.name}</p>
+                        <p className="text-xs text-gray-600">
                           {selectedUser ? (selectedUser.isOnline ? 'Online' : 'Offline') : `${selectedGroup?.members.length} members`}
                         </p>
                       </div>
@@ -1019,14 +1047,15 @@ const EnhancedChatWindow = () => {
                   </div>
 
                   {/* Messages */}
-                  <div className="flex-1 overflow-y-auto p-3 space-y-2">
+                  <div className="flex-1 overflow-y-auto px-5 py-4 space-y-2 bg-white">
                     {messages.length === 0 ? (
                       <div className="flex items-center justify-center h-full text-gray-500">
                         <div className="text-center">
                           <svg className="w-8 h-8 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                           </svg>
-                          <p className="text-sm">No messages yet. Start the conversation!</p>
+                          <p className="text-sm font-medium text-gray-700">No messages yet</p>
+                          <p className="text-xs mt-1 text-gray-500">Say hello to start the conversation.</p>
                         </div>
                       </div>
                     ) : (
@@ -1040,7 +1069,7 @@ const EnhancedChatWindow = () => {
                             onMouseEnter={() => setShowTimestamp(message._id)}
                             onMouseLeave={() => setShowTimestamp(null)}
                           >
-                            <div className="max-w-xs group">
+                            <div className="max-w-[75%] group">
                               {message.replyTo && (
                                 <div className="text-xs text-gray-500 mb-1 pl-2 border-l-2 border-gray-300">
                                   Replying to: {message.replyTo.message}
@@ -1122,19 +1151,19 @@ const EnhancedChatWindow = () => {
                               <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 mt-1">
                                 <button
                                   onClick={() => addReaction(message._id, '👍')}
-                                  className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded"
+                                  className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg"
                                 >
                                   👍
                                 </button>
                                 <button
                                   onClick={() => addReaction(message._id, '❤️')}
-                                  className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded"
+                                  className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg"
                                 >
                                   ❤️
                                 </button>
                                 <button
                                   onClick={() => setReplyToMessage(message)}
-                                  className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded"
+                                  className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg"
                                 >
                                   Reply
                                 </button>
@@ -1142,13 +1171,13 @@ const EnhancedChatWindow = () => {
                                   <>
                                     <button
                                       onClick={() => setEditingMessage(message)}
-                                      className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded"
+                                      className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg"
                                     >
                                       Edit
                                     </button>
                                     <button
                                       onClick={() => deleteMessage(message._id)}
-                                      className="text-xs px-2 py-1 bg-red-100 hover:bg-red-200 text-red-600 rounded"
+                                      className="text-xs px-2 py-1 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg"
                                     >
                                       Delete
                                     </button>
@@ -1173,7 +1202,7 @@ const EnhancedChatWindow = () => {
                   </div>
 
                   {/* Message Input */}
-                  <div className="p-3 border-t border-gray-200">
+                  <div className="px-5 py-3 border-t border-black/5 bg-white/80">
                     {replyToMessage && (
                       <div className="mb-2 p-2 bg-gray-100 rounded text-sm">
                         <div className="flex items-center justify-between">
@@ -1196,7 +1225,7 @@ const EnhancedChatWindow = () => {
                           onChange={handleTyping}
                           onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
                           placeholder="Type a message..."
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                          className="flex-1 px-3 py-2 border border-black/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white shadow-sm"
                         />
                         
                         {selectedFile && (
@@ -1215,27 +1244,27 @@ const EnhancedChatWindow = () => {
                       <div className="flex gap-1">
                         <button
                           onClick={() => setShowEmojiPicker(true)}
-                          className="px-2 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded"
+                          className="px-2.5 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl"
                         >
                           😊
                         </button>
                         <button
                           onClick={() => setShowFileUpload(true)}
-                          className="px-2 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded"
+                          className="px-2.5 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl"
                         >
                           📎
                         </button>
                         <button
                           onMouseDown={startVoiceRecording}
                           onMouseUp={stopVoiceRecording}
-                          className="px-2 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded"
+                          className="px-2.5 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl"
                         >
                           🎤
                         </button>
                         <button
                           onClick={sendMessage}
                           disabled={!newMessage.trim() && !selectedFile}
-                          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                          className="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold shadow-sm"
                         >
                           Send
                         </button>
@@ -1244,12 +1273,13 @@ const EnhancedChatWindow = () => {
                   </div>
                 </>
               ) : (
-                <div className="flex-1 flex items-center justify-center text-gray-500">
+                <div className="flex-1 flex items-center justify-center text-gray-500 bg-white">
                   <div className="text-center">
                     <svg className="w-12 h-12 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                     </svg>
-                    <p>Select a conversation to start chatting</p>
+                    <p className="text-sm font-medium text-gray-700">Select a conversation</p>
+                    <p className="text-xs mt-1 text-gray-500">Choose a user from the left to start chatting.</p>
                   </div>
                 </div>
               )}
