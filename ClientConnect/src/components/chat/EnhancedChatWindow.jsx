@@ -7,13 +7,7 @@ import EmojiPicker from './EmojiPicker';
 
 const EnhancedChatWindow = () => {
   const { user, token } = useAuth();
-  
-  // Guard clause - don't render if user is not available
-  if (!user || !token) {
-    console.log('EnhancedChatWindow: User or token not available', { user, token });
-    return null;
-  }
-  
+
   const [socket, setSocket] = useState(null);
   const [conversations, setConversations] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -71,10 +65,11 @@ const EnhancedChatWindow = () => {
   }, [user?._id]);
 
   const getSocketUrl = () => {
-    // In production, client + API are served from the same origin on Render.
-    // In dev, default to local API server.
     const fromEnv = import.meta?.env?.VITE_SOCKET_URL || import.meta?.env?.VITE_API_BASE_URL || '';
     if (fromEnv) return fromEnv.replace(/\/$/, '');
+    // Vite dev serves the SPA on :5173 while API + Socket.IO run on :3000 (see vite.config proxy).
+    // Using window.origin here would connect to Vite, which has no Socket.IO server — no real-time events.
+    if (import.meta.env.DEV) return 'http://localhost:3000';
     if (typeof window !== 'undefined' && window.location?.origin) return window.location.origin;
     return 'http://localhost:3000';
   };
@@ -271,7 +266,8 @@ const EnhancedChatWindow = () => {
       });
 
       newSocket.on('user_typing', (data) => {
-        if (selectedUser && data.senderId === selectedUser._id) {
+        const sel = selectedUserRef.current;
+        if (sel && String(data.senderId) === String(sel._id)) {
           setTypingUser(data.senderName);
           setIsTyping(data.isTyping);
         }
@@ -456,9 +452,32 @@ const EnhancedChatWindow = () => {
       });
 
       if (response.ok) {
+        const saved = await response.json();
         setNewMessage('');
         setSelectedFile(null);
         setReplyToMessage(null);
+        // Keep UI in sync even if Socket.IO is slow or misconfigured (socket still pushes for the other party).
+        const peerId =
+          selectedUser?._id != null
+            ? String(selectedUser._id)
+            : selectedGroup?._id != null
+              ? String(selectedGroup._id)
+              : null;
+        const savedReceiver = saved.receiver?._id ?? saved.receiver;
+        const savedGroup = saved.groupId?._id ?? saved.groupId;
+        const matchesDm =
+          selectedUser &&
+          !savedGroup &&
+          peerId &&
+          (String(savedReceiver) === peerId || String(saved.sender?._id ?? saved.sender) === peerId);
+        const matchesGroup = selectedGroup && savedGroup && String(savedGroup) === peerId;
+        if (matchesDm || matchesGroup) {
+          setMessages((prev) => {
+            const id = saved._id != null ? String(saved._id) : null;
+            if (id && prev.some((m) => String(m._id) === id)) return prev;
+            return [...prev, saved];
+          });
+        }
       }
     } catch (error) {
       console.error('Error sending message:', error);
@@ -469,8 +488,9 @@ const EnhancedChatWindow = () => {
     setNewMessage(e.target.value);
     
     if (selectedUser && socket) {
+      const rid = String(selectedUser._id);
       socket.emit('typing', {
-        receiverId: selectedUser._id,
+        receiverId: rid,
         isTyping: true
       });
 
@@ -480,7 +500,7 @@ const EnhancedChatWindow = () => {
 
       typingTimeoutRef.current = setTimeout(() => {
         socket.emit('typing', {
-          receiverId: selectedUser._id,
+          receiverId: rid,
           isTyping: false
         });
       }, 1000);

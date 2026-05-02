@@ -343,15 +343,17 @@ io.on('connection', (socket) => {
       // Populate sender info
       await chatMessage.populate('sender', 'name email');
 
-      // Send to receiver
-      socket.to(receiverId).emit('receive_message', chatMessage);
-      
-      // Send confirmation to sender
-      socket.emit('message_sent', chatMessage);
-      
-      // Mark as delivered if receiver is online
+      const receiverRoom = String(receiverId).trim();
+      const payload = typeof chatMessage.toObject === 'function'
+        ? chatMessage.toObject()
+        : chatMessage;
+
+      socket.to(receiverRoom).emit('receive_message', payload);
+
+      socket.emit('message_sent', payload);
+
       const receiverSocket = Array.from(io.sockets.sockets.values())
-        .find(s => s.userId === receiverId);
+        .find((s) => String(s.userId) === receiverRoom);
       
       if (receiverSocket) {
         // Receiver is online, mark as delivered
@@ -372,7 +374,8 @@ io.on('connection', (socket) => {
 
   // Handle typing indicators
   socket.on('typing', (data) => {
-    socket.to(data.receiverId).emit('user_typing', {
+    if (!data?.receiverId) return;
+    socket.to(String(data.receiverId).trim()).emit('user_typing', {
       senderId: socket.userId,
       senderName: socket.user.name,
       isTyping: data.isTyping

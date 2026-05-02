@@ -136,30 +136,30 @@ exports.sendMessage = async (req, res) => {
     // Emit message via Socket.IO for real-time delivery
     const io = req.app.get('io');
     if (io && receiverId) {
+      const receiverRoom = String(receiverId).trim();
+      const senderRoom = String(currentUserId).trim();
+      const payload = typeof chatMessage.toObject === 'function'
+        ? chatMessage.toObject()
+        : chatMessage;
       console.log('Emitting message via Socket.IO:', {
-        receiverId,
-        currentUserId,
+        receiverId: receiverRoom,
+        currentUserId: senderRoom,
         messageId: chatMessage._id
       });
-      
-      // Send to receiver
-      io.to(receiverId).emit('receive_message', chatMessage);
-      
-      // Send confirmation to sender
-      io.to(currentUserId).emit('message_sent', chatMessage);
-      
-      // Mark as delivered if receiver is online
+
+      io.to(receiverRoom).emit('receive_message', payload);
+      io.to(senderRoom).emit('message_sent', payload);
+
       const receiverSocket = Array.from(io.sockets.sockets.values())
-        .find(s => s.userId === receiverId);
+        .find((s) => String(s.userId) === receiverRoom);
       
       if (receiverSocket) {
         chatMessage.delivered = true;
         await chatMessage.save();
         
-        // Notify sender that message was delivered
-        io.to(currentUserId).emit('message_delivered', {
+        io.to(senderRoom).emit('message_delivered', {
           messageId: chatMessage._id,
-          receiverId: receiverId
+          receiverId: receiverRoom
         });
       }
     }
